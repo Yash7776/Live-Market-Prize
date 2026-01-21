@@ -3030,3 +3030,16 @@
 [I 260121 10:01:24 consumers:66] {'subscription_mode': 1, 'exchange_type': 1, 'token': '26009', 'sequence_number': 2759808, 'exchange_timestamp': 1768969885000, 'last_traded_price': 5906665, 'subscription_mode_val': 'LTP'}
 [I 260121 10:01:49 consumers:62] SmartAPI WebSocket Opened
 [I 260121 10:08:20 consumers:62] SmartAPI WebSocket Opened
+[I 260121 10:47:47 consumers:62] SmartAPI WebSocket Opened
+[I 260121 16:35:23 consumers:62] SmartAPI WebSocket Opened
+[W 260121 16:35:42 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260121 16:35:42 smartConnect:124] in pool
+[I 260121 16:35:43 consumers:62] SmartAPI WebSocket Opened
+[I 260121 16:35:52 consumers:62] SmartAPI WebSocket Opened
+[W 260121 16:35:58 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260121 16:35:58 smartConnect:124] in pool
+[I 260121 16:36:00 consumers:62] SmartAPI WebSocket Opened
+[I 260121 16:36:08 consumers:62] SmartAPI WebSocket Opened
+[I 260121 16:40:52 consumers:62] SmartAPI WebSocket Opened
+[W 260121 16:44:11 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260121 16:44:11 smartConnect:124] in pool

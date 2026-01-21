@@ -54,7 +54,7 @@ class MarketConsumer(WebsocketConsumer):
             token_list = [
                 {
                     "exchangeType": 1,  # NSE
-                    "tokens": ["26009"]  # NIFTY
+                    "tokens": ["26009", "26001", "26037"]
                 }
             ]
 
@@ -63,16 +63,25 @@ class MarketConsumer(WebsocketConsumer):
                 self.sws.subscribe(correlation_id, mode, token_list)
 
             def on_data(wsapp, message):
+                token = message.get("token")
                 ltp = message.get("last_traded_price")
 
-                if ltp:
-                    price = ltp / 100
+                if not ltp:
+                    return
 
-                    self.send(text_data=json.dumps({
-                        "symbol": "NIFTY",
-                        "ltp": price,
-                        "timestamp": message.get("exchange_timestamp")
-                    }))
+                price = ltp / 100
+
+                token_map = {
+                    "26009": "NIFTY",
+                    "26001": "BANKNIFTY",
+                    "26037": "FINNIFTY"
+                }
+
+                self.send(text_data=json.dumps({
+                    "symbol": token_map.get(token, "UNKNOWN"),
+                    "token": token,
+                    "ltp": price
+                }))
 
 
             def on_error(wsapp, error):

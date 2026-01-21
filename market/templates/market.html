@@ -5,28 +5,28 @@
 </head>
 <body>
 
-<h2>NIFTY Live Price</h2>
-<h1 id="price">Waiting...</h1>
+<div>NIFTY: <span id="nifty">--</span></div>
+<div>BANKNIFTY: <span id="banknifty">--</span></div>
+<div>FINNIFTY: <span id="finnifty">--</span></div>
 
 <script>
-    const socket = new WebSocket("ws://127.0.0.1:8000/ws/market/");
+const socket = new WebSocket("ws://127.0.0.1:8000/ws/market/");
 
-    socket.onmessage = function(e) {
-        const data = JSON.parse(e.data);
+socket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
 
-        if (data.ltp) {
-            document.getElementById("price").innerText =
-                "₹ " + data.ltp.toFixed(2);
-        }
-    };
+    if (data.symbol === "NIFTY") {
+        document.getElementById("nifty").innerText = data.ltp;
+    }
 
-    socket.onopen = function() {
-        console.log("WebSocket Connected");
-    };
+    if (data.symbol === "BANKNIFTY") {
+        document.getElementById("banknifty").innerText = data.ltp;
+    }
 
-    socket.onclose = function() {
-        console.log("WebSocket Disconnected");
-    };
+    if (data.symbol === "FINNIFTY") {
+        document.getElementById("finnifty").innerText = data.ltp;
+    }
+};
 </script>
 
 </body>
