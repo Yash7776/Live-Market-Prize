@@ -1,0 +1,2 @@
+[E 260120 18:34:06 smartWebSocketV2:303] Error occurred during WebSocket connection: module 'websocket' has no attribute 'WebSocketApp'
+[E 260120 18:34:06 consumers:91] module 'websocket' has no attribute 'WebSocketApp'

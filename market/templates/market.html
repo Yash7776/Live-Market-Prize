@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Live Market</title>
+</head>
+<body>
+
+<h2>NIFTY Live Price</h2>
+<h1 id="price">Waiting...</h1>
+
+<script>
+    const socket = new WebSocket("ws://127.0.0.1:8000/ws/market/");
+
+    socket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+
+        if (data.ltp) {
+            document.getElementById("price").innerText =
+                "₹ " + data.ltp.toFixed(2);
+        }
+    };
+
+    socket.onopen = function() {
+        console.log("WebSocket Connected");
+    };
+
+    socket.onclose = function() {
+        console.log("WebSocket Disconnected");
+    };
+</script>
+
+</body>
+</html>
