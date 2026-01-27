@@ -1,0 +1,62 @@
+[I 260127 16:26:06 consumers:62] SmartAPI WebSocket Opened
+[I 260127 16:47:47 consumers:103] SmartAPI WebSocket Opened
+[I 260127 16:50:24 consumers:103] SmartAPI WebSocket Opened
+[I 260127 17:15:57 consumers:62] SmartAPI WebSocket Opened
+[I 260127 17:31:56 consumers:80] SmartAPI WebSocket Opened
+[W 260127 17:34:53 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260127 17:34:53 smartConnect:124] in pool
+[I 260127 17:34:58 consumers:80] SmartAPI WebSocket Opened
+[I 260127 17:35:03 consumers:80] SmartAPI WebSocket Opened
+[I 260127 17:51:23 consumers:81] SmartAPI WebSocket Opened
+[W 260127 17:51:24 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260127 17:51:25 smartConnect:124] in pool
+[I 260127 17:51:30 consumers:81] SmartAPI WebSocket Opened
+[I 260127 17:51:35 consumers:81] SmartAPI WebSocket Opened
+[W 260127 17:51:55 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260127 17:51:55 smartConnect:124] in pool
+[I 260127 17:52:03 consumers:81] SmartAPI WebSocket Opened
+[I 260127 17:52:05 consumers:81] SmartAPI WebSocket Opened
+[W 260127 17:52:09 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260127 17:52:09 smartConnect:124] in pool
+[I 260127 17:53:58 consumers:81] SmartAPI WebSocket Opened
+[I 260127 17:54:02 consumers:67] Instrument list fetched
+[I 260127 17:54:02 consumers:81] SmartAPI WebSocket Opened
+[I 260127 17:54:07 consumers:67] Instrument list fetched
+[I 260127 17:54:07 consumers:81] SmartAPI WebSocket Opened
+[W 260127 17:55:19 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260127 17:55:19 smartConnect:124] in pool
+[I 260127 17:55:29 consumers:81] SmartAPI WebSocket Opened
+[E 260127 17:55:29 consumers:104] Connection closed
+[W 260127 17:55:29 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[E 260127 17:55:29 consumers:104] Connection closed
+[W 260127 17:55:29 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[W 260127 17:56:59 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260127 17:56:59 smartConnect:124] in pool
+[I 260127 17:57:04 consumers:81] SmartAPI WebSocket Opened
+[E 260127 17:57:09 consumers:104] Connection closed
+[W 260127 17:57:09 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[E 260127 17:57:09 consumers:104] Connection closed
+[W 260127 17:57:09 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[W 260127 18:02:33 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260127 18:02:33 smartConnect:124] in pool
+[I 260127 18:02:39 consumers:81] SmartAPI WebSocket Opened
+[E 260127 18:02:43 consumers:104] Connection closed
+[W 260127 18:02:43 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[E 260127 18:02:43 consumers:104] Connection closed
+[W 260127 18:02:43 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[W 260127 18:02:46 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260127 18:02:46 smartConnect:124] in pool
+[I 260127 18:02:52 consumers:81] SmartAPI WebSocket Opened
+[E 260127 18:02:56 consumers:104] Connection closed
+[W 260127 18:02:56 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[E 260127 18:02:56 consumers:104] Connection closed
+[W 260127 18:02:56 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[I 260127 18:05:18 consumers:81] SmartAPI WebSocket Opened
+[W 260127 18:06:12 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260127 18:06:12 smartConnect:124] in pool
+[I 260127 18:06:18 consumers:81] SmartAPI WebSocket Opened
+[I 260127 18:06:21 consumers:67] Instrument list fetched
+[I 260127 18:06:22 consumers:81] SmartAPI WebSocket Opened
+[I 260127 18:06:22 consumers:81] SmartAPI WebSocket Opened
+[W 260127 18:08:23 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260127 18:08:23 smartConnect:124] in pool

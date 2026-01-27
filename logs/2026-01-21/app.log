@@ -3043,3 +3043,5 @@
 [I 260121 16:40:52 consumers:62] SmartAPI WebSocket Opened
 [W 260121 16:44:11 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
 [I 260121 16:44:11 smartConnect:124] in pool
+[I 260121 16:44:13 consumers:62] SmartAPI WebSocket Opened
+[I 260121 16:44:21 consumers:62] SmartAPI WebSocket Opened

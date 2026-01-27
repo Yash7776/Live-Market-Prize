@@ -5,9 +5,33 @@
 </head>
 <body>
 
-<div>NIFTY: <span id="nifty">--</span></div>
-<div>BANKNIFTY: <span id="banknifty">--</span></div>
-<div>FINNIFTY: <span id="finnifty">--</span></div>
+<div id="subscriptions">
+    <!-- Dynamic subscriptions will be added here -->
+</div>
+
+<hr>
+
+<h3>Subscribe to Symbol</h3>
+<input id="tradingsymbol" placeholder="Enter tradingsymbol e.g. NIFTY or SBIN-EQ">
+<select id="exchange">
+    <option value="NSE">NSE</option>
+    <option value="NFO">NFO</option>
+    <option value="BSE">BSE</option>
+    <option value="MCX">MCX</option>
+    <!-- Add more as needed -->
+</select>
+<button onclick="subscribeSymbol()">Subscribe</button>
+
+<h3>Unsubscribe from Symbol</h3>
+<input id="unsub_tradingsymbol" placeholder="Enter tradingsymbol e.g. NIFTY">
+<select id="unsub_exchange">
+    <option value="NSE">NSE</option>
+    <option value="NFO">NFO</option>
+    <option value="BSE">BSE</option>
+    <option value="MCX">MCX</option>
+    <!-- Add more as needed -->
+</select>
+<button onclick="unsubscribeSymbol()">Unsubscribe</button>
 
 <script>
 const socket = new WebSocket("ws://127.0.0.1:8000/ws/market/");
@@ -15,17 +39,69 @@ const socket = new WebSocket("ws://127.0.0.1:8000/ws/market/");
 socket.onmessage = function(e) {
     const data = JSON.parse(e.data);
 
-    if (data.symbol === "NIFTY") {
-        document.getElementById("nifty").innerText = data.ltp;
+    if (data.symbol) {
+        const spanId = data.symbol.toLowerCase().replace('-', '');
+        const span = document.getElementById(spanId);
+        if (span) {
+            span.innerText = data.ltp;
+        }
+    } else if (data.status) {
+        console.log(data.status);  // e.g., "subscribed" or "order_placed"
+    } else if (data.error) {
+        console.error(data.error);
     }
+};
 
-    if (data.symbol === "BANKNIFTY") {
-        document.getElementById("banknifty").innerText = data.ltp;
-    }
+const symbolDivs = {};  // Track added symbols to avoid duplicates
 
-    if (data.symbol === "FINNIFTY") {
-        document.getElementById("finnifty").innerText = data.ltp;
+function addSymbolDiv(symbol) {
+    if (!symbolDivs[symbol]) {
+        const div = document.createElement('div');
+        const spanId = symbol.toLowerCase().replace('-', '');
+        div.innerHTML = `${symbol}: <span id="${spanId}">--</span>`;
+        document.getElementById('subscriptions').appendChild(div);
+        symbolDivs[symbol] = true;
     }
+}
+
+function subscribeSymbol() {
+    const ts = document.getElementById('tradingsymbol').value.trim();
+    const ex = document.getElementById('exchange').value;
+
+    if (ts) {
+        socket.send(JSON.stringify({
+            "action": "subscribe",
+            "tradingsymbols": [ts],
+            "exchange": ex
+        }));
+
+        // Add div preemptively
+        addSymbolDiv(ts);
+    }
+}
+
+function unsubscribeSymbol() {
+    const ts = document.getElementById('unsub_tradingsymbol').value.trim();
+    const ex = document.getElementById('unsub_exchange').value;
+
+    if (ts) {
+        socket.send(JSON.stringify({
+            "action": "unsubscribe",
+            "tradingsymbols": [ts],
+            "exchange": ex
+        }));
+
+        // Optionally remove div from page (commented out for now)
+        // const spanId = ts.toLowerCase().replace('-', '');
+        // const div = document.getElementById(spanId).parentNode;
+        // div.remove();
+        // delete symbolDivs[ts];
+    }
+}
+
+// Optionally subscribe to defaults on connect
+socket.onopen = function() {
+    // subscribeSymbol() for defaults if needed, but manual for user-friendly
 };
 </script>
 
