@@ -180,6 +180,24 @@ class MarketConsumer(WebsocketConsumer):
                 params = data.get("params", {})
                 self.handle_place_order(params)
 
+            elif action == "modify_order":
+                params = data.get("params", {})
+                self.handle_modify_order(params)
+
+            elif action == "cancel_order":
+                params = data.get("params", {})
+                self.handle_cancel_order(params)
+
+            elif action == "get_order":
+                params = data.get("params", {})
+                self.handle_get_order_details(params)
+                
+            elif action == "relogin":
+                self.handle_relogin()
+
+            else:
+                self.send(text_data=json.dumps({"error": f"Unknown action: {action}"}))
+
         except Exception as e:
             self.send(text_data=json.dumps({
                 "error": str(e)
@@ -246,10 +264,160 @@ class MarketConsumer(WebsocketConsumer):
     def handle_place_order(self, params):
         try:
             order_response = self.smart_api.placeOrder(params)
-            self.send(text_data=json.dumps({"status": "order_placed", "data": order_response}))
-        except Exception as e:
-            self.send(text_data=json.dumps({"error": str(e)}))
+            logger.info(f"Raw broker response from placeOrder: {order_response}")
 
+            if order_response is None:
+                error_msg = "placeOrder returned None - possible session invalid, network issue, or broker restriction"
+                self.send(text_data=json.dumps({
+                    "error": error_msg,
+                    "broker_response": None
+                }))
+                logger.error(error_msg)
+                return
+
+            # Now safely check if it's a dict
+            if isinstance(order_response, dict):
+                if order_response.get('status') is True:
+                    order_id = order_response.get('data', {}).get('orderid')
+                    if order_id:
+                        self.send(text_data=json.dumps({
+                            "status": "order_placed",
+                            "orderid": order_id,
+                            "data": order_response
+                        }))
+                        logger.info(f"Order placed successfully - ID: {order_id}")
+                    else:
+                        self.send(text_data=json.dumps({
+                            "error": "Order accepted but no orderid returned",
+                            "broker_response": order_response
+                        }))
+                else:
+                    error_msg = order_response.get('message', 'Order placement rejected by broker')
+                    self.send(text_data=json.dumps({
+                        "error": error_msg,
+                        "errorcode": order_response.get('errorcode'),
+                        "broker_response": order_response
+                    }))
+                    logger.error(f"Order rejected: {order_response}")
+            else:
+                self.send(text_data=json.dumps({
+                    "error": f"Unexpected response type from placeOrder: {type(order_response)}",
+                    "broker_response": str(order_response)
+                }))
+                logger.error(f"Unexpected type: {type(order_response)} - {order_response}")
+
+        except Exception as e:
+            self.send(text_data=json.dumps({
+                "error": f"Exception during placeOrder: {str(e)}",
+                "action": "place_order"
+            }))
+            logger.error(f"Place order exception: {str(e)}")
+
+    def handle_modify_order(self, params):
+        try:
+            order_id = params.get("orderid")
+            if not order_id:
+                raise ValueError("orderid is required for modify")
+
+            # Remove orderid from params before passing to modifyOrder
+            modify_params = {k: v for k, v in params.items() if k != "orderid"}
+
+            response = self.smart_api.modifyOrder(order_id, modify_params)
+            self.send(text_data=json.dumps({
+                "status": "order_modified",
+                "orderid": order_id,
+                "data": response
+            }))
+            logger.info(f"Modify Order Success: {order_id} - {response}")
+        except Exception as e:
+            error_msg = str(e)
+            logger.error(f"Modify Order Failed: {error_msg}")
+            self.send(text_data=json.dumps({
+                "error": error_msg,
+                "action": "modify_order"
+            }))
+
+    def handle_cancel_order(self, params):
+        try:
+            order_id = params.get("orderid")
+            variety = params.get("variety", "NORMAL")  # default to NORMAL
+
+            if not order_id:
+                raise ValueError("orderid is required for cancel")
+
+            response = self.smart_api.cancelOrder(variety, order_id)
+            self.send(text_data=json.dumps({
+                "status": "order_canceled",
+                "orderid": order_id,
+                "data": response
+            }))
+            logger.info(f"Cancel Order Success: {order_id} - {response}")
+        except Exception as e:
+            error_msg = str(e)
+            logger.error(f"Cancel Order Failed: {error_msg}")
+            self.send(text_data=json.dumps({
+                "error": error_msg,
+                "action": "cancel_order"
+            }))
+
+    def handle_get_order_details(self, params):
+        try:
+            order_id = params.get("orderid")
+            if not order_id:
+                raise ValueError("orderid is required for details")
+
+            # Get full order book and filter for the orderid
+            order_book = self.smart_api.orderBook()
+            if not order_book or 'data' not in order_book:
+                raise ValueError("No order book data")
+
+            matching_order = None
+            for order in order_book['data']:
+                if order.get('orderid') == order_id:
+                    matching_order = order
+                    break
+
+            if matching_order:
+                self.send(text_data=json.dumps({
+                    "status": "order_details",
+                    "orderid": order_id,
+                    "data": matching_order
+                }))
+            else:
+                self.send(text_data=json.dumps({
+                    "error": f"Order {order_id} not found in recent orders",
+                    "action": "get_order"
+                }))
+        except Exception as e:
+            error_msg = str(e)
+            logger.error(f"Get Order Details Failed: {error_msg}")
+            self.send(text_data=json.dumps({
+                "error": error_msg,
+                "action": "get_order"
+            }))
+    def handle_relogin(self):
+        try:
+            totp_code = pyotp.TOTP(TOTP_SECRET).now()
+            logger.info(f"Re-login TOTP: {totp_code}")
+            login_data = self.smart_api.generateSession(CLIENT_CODE, PIN, totp_code)
+
+            if login_data.get('status') == True:
+                self.auth_token = login_data["data"]["jwtToken"]
+                self.feed_token = self.smart_api.getfeedToken()
+                self.send(text_data=json.dumps({
+                    "status": "Re-login successful - session refreshed",
+                    "auth_token_prefix": self.auth_token[:20] + "..."
+                }))
+                logger.info("Re-login SUCCESS")
+            else:
+                error_msg = login_data.get('message', 'Re-login failed - check credentials/TOTP')
+                self.send(text_data=json.dumps({"error": error_msg}))
+                logger.error(error_msg)
+
+        except Exception as e:
+            self.send(text_data=json.dumps({"error": f"Re-login exception: {str(e)}"}))
+            logger.error(f"Re-login exception: {str(e)}")
+        
     def disconnect(self, close_code):
         try:
             if self.sws:

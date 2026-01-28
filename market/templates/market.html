@@ -35,25 +35,48 @@
 </select>
 <button onclick="unsubscribeSymbol()">Unsubscribe</button>
 
+
+<h3>Test Orders (Use Small Qty & Safe Prices!)</h3>
+
+<button onclick="testPlaceOrder()">Place Test LIMIT BUY (SBIN-EQ, 1 qty @100)</button>
+<br><br>
+<input id="orderId" placeholder="Paste orderid here" style="width:300px;">
+<button onclick="testModifyOrder()">Modify Price to 150</button>
+<button onclick="testCancelOrder()">Cancel Order</button>
+<button onclick="testGetOrder()">Get Order Details</button>
+
 <script>
 const socket = new WebSocket("ws://127.0.0.1:8000/ws/market/");
 
 socket.onmessage = function(e) {
-    const data = JSON.parse(e.data);
+    let data;
+    try {
+        data = JSON.parse(e.data);
+        console.log("Full WS message:", data);  // Keep this for debug
+    } catch (err) {
+        console.error("Invalid JSON received:", e.data);
+        return;
+    }
 
     if (data.symbol) {
         const spanId = data.symbol.toLowerCase().replace('-', '');
         const span = document.getElementById(spanId);
         if (span) {
-            span.innerText = data.ltp;
+            span.innerText = data.ltp || '--';
         }
-    } else if (data.status) {
-        console.log(data.status);  // e.g., "subscribed" or "order_placed"
-    } else if (data.error) {
-        console.error(data.error);
+    } 
+    else if (data.status) {
+        console.log("Status:", data.status);
+        if (data.status === "order_placed") {
+            alert("Order placed successfully!\nOrder ID: " + (data.orderid || "unknown"));
+        }
+    } 
+    else if (data.error) {
+        console.error("Error:", data.error);
+        alert("Order failed: " + data.error + 
+              (data.errorcode ? " (" + data.errorcode + ")" : ""));
     }
 };
-
 const symbolDivs = {};  // Track added symbols to avoid duplicates
 
 function addSymbolDiv(symbol) {
@@ -105,6 +128,63 @@ function unsubscribeSymbol() {
 socket.onopen = function() {
     // subscribeSymbol() for defaults if needed, but manual for user-friendly
 };
+</script>
+
+<script>
+function testPlaceOrder() {
+    socket.send(JSON.stringify({
+        "action": "place_order",
+        "params": {
+            "variety": "NORMAL",
+            "tradingsymbol": "SBIN-EQ",
+            "symboltoken": "3045",
+            "transactiontype": "BUY",
+            "exchange": "NSE",
+            "ordertype": "LIMIT",
+            "producttype": "INTRADAY",
+            "duration": "DAY",
+            "price": "100",
+            "quantity": "1",
+            "squareoff": "0",
+            "stoploss": "0"
+        }
+    }));
+}
+
+function testModifyOrder() {
+    const oid = document.getElementById('orderId').value.trim();
+    if (!oid) return alert("Paste orderid first!");
+    socket.send(JSON.stringify({
+        "action": "modify_order",
+        "params": {
+            "orderid": oid,
+            "price": "150"
+        }
+    }));
+}
+
+function testCancelOrder() {
+    const oid = document.getElementById('orderId').value.trim();
+    if (!oid) return alert("Paste orderid first!");
+    socket.send(JSON.stringify({
+        "action": "cancel_order",
+        "params": {
+            "orderid": oid,
+            "variety": "NORMAL"
+        }
+    }));
+}
+
+function testGetOrder() {
+    const oid = document.getElementById('orderId').value.trim();
+    if (!oid) return alert("Paste orderid first!");
+    socket.send(JSON.stringify({
+        "action": "get_order",
+        "params": {
+            "orderid": oid
+        }
+    }));
+}
 </script>
 
 </body>
