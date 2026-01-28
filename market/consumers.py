@@ -10,25 +10,30 @@ from logzero import logger
 from SmartApi import SmartConnect
 from SmartApi.smartWebSocketV2 import SmartWebSocketV2
 
-# Load environment variables
+# Load environment variables from .env file
 load_dotenv()
 
-API_KEY = os.getenv("ANGEL_API_KEY")
-CLIENT_CODE = os.getenv("ANGEL_CLIENT_CODE")
-PIN = os.getenv("ANGEL_PIN")
-TOTP_SECRET = os.getenv("ANGEL_TOTP")
+# ────────────────────────────────────────────────
+# Your provided credentials (store in .env for security!)
+# ────────────────────────────────────────────────
+API_KEY = os.getenv("ANGEL_API_KEY")                    
+CLIENT_CODE = os.getenv("ANGEL_CLIENT_CODE")            
+PIN = os.getenv("ANGEL_PIN")                            
+TOTP_SECRET = os.getenv("ANGEL_TOTP")                   
 
 INSTRUMENT_URL = "https://margincalculator.angelbroking.com/OpenAPI_File/files/OpenAPIScripMaster.json"
 
+# Official exchangeType mapping from SmartAPI SDK source
 EXCHANGE_MAP = {
-    "NSE": 1,
-    "NFO": 2,
-    "BSE": 3,
-    "BFO": 4,
-    "BCD": 5,
-    "MCX": 5,
-    "NCDEX": 6,
-    "CDE": 7,
+    "NSE": 1,    # NSE_CM - Cash / Equity + Indices
+    "NFO": 2,    # NSE_FO - Futures & Options
+    "BSE": 3,    # BSE_CM - Cash / Equity
+    "BFO": 4,    # BSE_FO - Futures & Options
+    "MCX": 5,    # MCX_FO - Commodity Futures (also used for energy)
+    "NCO": 5,    # NCO (energy/commodity segment) - same type as MCX
+    "NCDEX": 7,  # NCX_FO - NCDEX Futures
+    "CDS": 13,   # CDE_FO - Currency Derivatives
+    # Add more only if needed and confirmed
 }
 
 
@@ -36,51 +41,72 @@ class MarketConsumer(WebsocketConsumer):
 
     def connect(self):
         self.accept()
-        self.send(json.dumps({"status": "WebSocket Connected"}))
+        self.send(json.dumps({"status": "WebSocket Connected - Starting login..."}))
 
-        self.subscribed_tokens = {}  # exchangeType: set(tokens)
-        self.token_symbol_map = {}  # token: symbol (tradingsymbol)
+        self.subscribed_tokens = {}          # exchangeType: set(tokens)
+        self.token_symbol_map = {}           # token: symbol (tradingsymbol)
         self.smart_api = None
         self.sws = None
         self.instrument_list = None
+        self.auth_token = None
+        self.feed_token = None
 
-        # Start SmartAPI socket in background
+        # Start SmartAPI login + socket in background thread
         threading.Thread(target=self.start_smartapi, daemon=True).start()
 
     def start_smartapi(self):
         try:
-            # -------- STEP 1: LOGIN --------
+            # ────────────────────────────────────────────────
+            # STEP 2: Generate Access Token (Login)
+            # ────────────────────────────────────────────────
             self.smart_api = SmartConnect(api_key=API_KEY)
 
-            totp = pyotp.TOTP(TOTP_SECRET).now()
-            data = self.smart_api.generateSession(CLIENT_CODE, PIN, totp)
+            totp_code = pyotp.TOTP(TOTP_SECRET).now()
+            logger.info(f"Generated TOTP: {totp_code}")
 
-            auth_token = data["data"]["jwtToken"]
-            feed_token = self.smart_api.getfeedToken()
+            login_data = self.smart_api.generateSession(CLIENT_CODE, PIN, totp_code)
 
-            logger.info("SmartAPI Login Successful")
+            if login_data.get('status') == False:
+                error_msg = login_data.get('message', 'Login failed - check credentials/TOTP')
+                logger.error(error_msg)
+                self.send(json.dumps({"error": error_msg, "login_status": "FAILED"}))
+                return
 
-            # Fetch instrument list
+            self.auth_token = login_data["data"]["jwtToken"]
+            self.feed_token = self.smart_api.getfeedToken()
+
+            logger.info(f"Login SUCCESS - Auth Token: {self.auth_token[:20]}... | Feed Token: {self.feed_token[:20]}...")
+            self.send(json.dumps({
+                "status": "Login Successful",
+                "login_status": "SUCCESS",
+                "client_code": CLIENT_CODE
+            }))
+
+            # Fetch instrument master list (for token lookup)
             response = requests.get(INSTRUMENT_URL)
-            self.instrument_list = response.json()
+            if response.status_code == 200:
+                self.instrument_list = response.json()
+                logger.info(f"Instrument list fetched - {len(self.instrument_list)} entries")
+            else:
+                logger.error("Failed to fetch instrument list")
+                self.send(json.dumps({"error": "Instrument list download failed"}))
 
-            logger.info("Instrument list fetched")
-
-            # -------- STEP 2: WEBSOCKET --------
+            # ────────────────────────────────────────────────
+            # STEP 3: Start WebSocket Datafeed
+            # ────────────────────────────────────────────────
             self.sws = SmartWebSocketV2(
-                auth_token,
+                self.auth_token,
                 API_KEY,
                 CLIENT_CODE,
-                feed_token
+                self.feed_token
             )
 
-            correlation_id = "abc123"
-            mode = 1  # LTP (can be made dynamic later)
+            correlation_id = "market_stream_001"
+            mode = 1  # LTP mode (change to 2=Depth, 3=OI if needed later)
 
             def on_open(wsapp):
-                logger.info("SmartAPI WebSocket Opened")
-                # Optionally subscribe to defaults here
-                # self.handle_subscribe(["NIFTY", "BANKNIFTY", "FINNIFTY"], "NSE")
+                logger.info("SmartAPI WebSocket Opened - Ready for subscriptions")
+                self.send(json.dumps({"status": "Datafeed Connected"}))
 
             def on_data(wsapp, message):
                 token = message.get("token")
@@ -101,13 +127,12 @@ class MarketConsumer(WebsocketConsumer):
 
 
             def on_error(wsapp, error):
-                logger.error(error)
-                self.send(text_data=json.dumps({
-                    "error": str(error)
-                }))
+                logger.error(f"WebSocket Error: {error}")
+                self.send(text_data=json.dumps({"error": str(error)}))
 
             def on_close(wsapp):
                 logger.info("SmartAPI WebSocket Closed")
+                self.send(text_data=json.dumps({"status": "Datafeed Disconnected"}))
 
             self.sws.on_open = on_open
             self.sws.on_data = on_data
@@ -117,9 +142,10 @@ class MarketConsumer(WebsocketConsumer):
             self.sws.connect()
 
         except Exception as e:
-            logger.error(e)
+            logger.error(f"Critical error in start_smartapi: {str(e)}")
             self.send(text_data=json.dumps({
-                "error": str(e)
+                "error": f"Login/Datafeed failed: {str(e)}",
+                "login_status": "FAILED"
             }))
 
     def receive(self, text_data):
@@ -213,6 +239,7 @@ class MarketConsumer(WebsocketConsumer):
 
     def disconnect(self, close_code):
         try:
-            self.sws.close_connection()
+            if self.sws:
+                self.sws.close_connection()
         except:
             pass
