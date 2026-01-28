@@ -1,1 +1,4 @@
 [I 260128 14:08:06 consumers:108] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260128 14:29:48 consumers:108] SmartAPI WebSocket Opened - Ready for subscriptions
+[W 260128 14:30:24 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260128 14:30:25 smartConnect:124] in pool

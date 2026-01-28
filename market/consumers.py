@@ -131,8 +131,21 @@ class MarketConsumer(WebsocketConsumer):
                 self.send(text_data=json.dumps({"error": str(error)}))
 
             def on_close(wsapp):
-                logger.info("SmartAPI WebSocket Closed")
-                self.send(text_data=json.dumps({"status": "Datafeed Disconnected"}))
+                logger.info("SmartAPI WebSocket Closed - Attempting reconnect in 5 seconds...")
+                self.send(text_data=json.dumps({"status": "Datafeed Disconnected - Reconnecting..."}))
+
+                # Simple reconnection (can be made more robust)
+                import time
+                time.sleep(5)
+                try:
+                    logger.info("Reconnecting WebSocket...")
+                    self.sws.connect()
+                except Exception as e:
+                    logger.error(f"Reconnect failed: {e}")
+                    self.send(text_data=json.dumps({"error": f"Reconnect failed: {str(e)}"}))
+
+            # Also add this to make reconnection more reliable
+            self.sws.on_close = on_close
 
             self.sws.on_open = on_open
             self.sws.on_data = on_data
