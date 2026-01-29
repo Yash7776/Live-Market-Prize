@@ -39,3 +39,5 @@
 [I 260129 10:08:37 consumers:453] Historical data fetched - 150 candles
 [W 260129 10:15:49 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
 [I 260129 10:15:49 smartConnect:124] in pool
+[I 260129 10:15:55 consumers:108] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260129 10:15:59 consumers:108] SmartAPI WebSocket Opened - Ready for subscriptions

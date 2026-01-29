@@ -4,7 +4,8 @@ import threading
 import pyotp
 import requests
 from dotenv import load_dotenv
-
+import pandas as pd
+import numpy as np
 from channels.generic.websocket import WebsocketConsumer
 from logzero import logger
 from SmartApi import SmartConnect
@@ -453,11 +454,43 @@ class MarketConsumer(WebsocketConsumer):
             logger.info(f"Historical data fetched - {len(candle_data.get('data', []))} candles")
 
             if candle_data.get('status') == True and candle_data.get('data'):
+                candles = candle_data["data"]
+                if not candles:
+                    self.send(text_data=json.dumps({"error": "No candles returned"}))
+                    return
+
+                # Extract columns
+                timestamps = [c[0] for c in candles]
+                opens  = [c[1] for c in candles]
+                highs  = [c[2] for c in candles]
+                lows   = [c[3] for c in candles]
+                closes = [c[4] for c in candles]
+                volumes = [c[5] for c in candles]
+
+                # Calculate indicators
+                rsi = self.calculate_rsi(closes)
+                macd_line, macd_signal, macd_hist = self.calculate_macd(closes)
+                adx, di_plus, di_minus = self.calculate_adx(highs, lows, closes)
+
                 self.send(text_data=json.dumps({
-                    "status": "historical_data",
+                    "status": "historical_data_with_indicators",
                     "symboltoken": symbol_token,
                     "interval": interval,
-                    "data": candle_data["data"]  # [[timestamp, O, H, L, C, V], ...]
+                    "num_candles": len(candles),
+                    "latest_close": closes[-1] if closes else None,
+                    "rsi_14": round(rsi, 2) if rsi is not None else "Not enough data",
+                    "macd": {
+                        "line": round(macd_line, 4) if macd_line is not None else None,
+                        "signal": round(macd_signal, 4) if macd_signal is not None else None,
+                        "histogram": round(macd_hist, 4) if macd_hist is not None else None
+                    },
+                    "adx": {
+                        "adx": round(adx, 2) if adx is not None else "Not enough data",
+                        "di_plus": round(di_plus, 2) if di_plus is not None else None,
+                        "di_minus": round(di_minus, 2) if di_minus is not None else None
+                    },
+                    # Optional: send full candles if needed
+                    # "data": candles
                 }))
             else:
                 error_msg = candle_data.get('message', 'No historical data or failure')
@@ -471,7 +504,72 @@ class MarketConsumer(WebsocketConsumer):
                 "error": f"Historical fetch failed: {str(e)}",
                 "action": "get_historical"
             }))
-            logger.error(f"Historical fetch exception: {str(e)}")              
+            logger.error(f"Historical fetch exception: {str(e)}")
+
+    def calculate_rsi(self, closes, period=14):
+        """Calculate RSI(14) from list of close prices"""
+        if len(closes) < period + 1:
+            return None
+        deltas = np.diff(closes)
+        seed = deltas[:period+1]
+        up = seed[seed >= 0].sum() / period
+        down = -seed[seed < 0].sum() / period
+        rs = up / down if down != 0 else np.inf
+        rsi = np.zeros_like(closes)
+        rsi[:period] = 100. - 100. / (1. + rs)
+        
+        for i in range(period, len(closes)):
+            delta = deltas[i - 1]
+            if delta > 0:
+                upval = delta
+                downval = 0.
+            else:
+                upval = 0.
+                downval = -delta
+            up = (up * (period - 1) + upval) / period
+            down = (down * (period - 1) + downval) / period
+            rs = up / down if down != 0 else np.inf
+            rsi[i] = 100. - 100. / (1. + rs)
+        return rsi[-1] if len(rsi) > 0 else None
+
+    def calculate_macd(self, closes, fast=12, slow=26, signal=9):
+        """Calculate MACD line, signal line, histogram"""
+        if len(closes) < slow:
+            return None, None, None
+        ema_fast = pd.Series(closes).ewm(span=fast, adjust=False).mean()
+        ema_slow = pd.Series(closes).ewm(span=slow, adjust=False).mean()
+        macd_line = ema_fast - ema_slow
+        signal_line = macd_line.ewm(span=signal, adjust=False).mean()
+        histogram = macd_line - signal_line
+        return macd_line.iloc[-1], signal_line.iloc[-1], histogram.iloc[-1]
+
+    def calculate_adx(self, highs, lows, closes, period=14):
+        """Calculate ADX, +DI, -DI"""
+        if len(closes) < period * 2:
+            return None, None, None
+        
+        df = pd.DataFrame({'high': highs, 'low': lows, 'close': closes})
+        
+        # True Range
+        df['tr1'] = df['high'] - df['low']
+        df['tr2'] = abs(df['high'] - df['close'].shift())
+        df['tr3'] = abs(df['low'] - df['close'].shift())
+        df['tr'] = df[['tr1', 'tr2', 'tr3']].max(axis=1)
+        
+        # Directional Movement
+        df['dm_plus'] = np.where((df['high'] - df['high'].shift()) > (df['low'].shift() - df['low']),
+                                np.maximum(df['high'] - df['high'].shift(), 0), 0)
+        df['dm_minus'] = np.where((df['low'].shift() - df['low']) > (df['high'] - df['high'].shift()),
+                                np.maximum(df['low'].shift() - df['low'], 0), 0)
+        
+        # Smoothed values
+        atr = df['tr'].rolling(window=period).mean()
+        di_plus = 100 * (df['dm_plus'].rolling(window=period).mean() / atr)
+        di_minus = 100 * (df['dm_minus'].rolling(window=period).mean() / atr)
+        dx = 100 * abs(di_plus - di_minus) / (di_plus + di_minus)
+        adx = dx.rolling(window=period).mean()
+        
+        return adx.iloc[-1], di_plus.iloc[-1], di_minus.iloc[-1]              
         
     def disconnect(self, close_code):
         try:
