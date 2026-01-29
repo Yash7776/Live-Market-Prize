@@ -35,7 +35,14 @@
 </select>
 <button onclick="unsubscribeSymbol()">Unsubscribe</button>
 
-<button onclick="testHistorical()">Get 15min Historical for SBI</button>
+<h3>Get 15 min Historical for SBI</h3>
+<button onclick="testHistorical()">Get Historical</button>
+
+<div id="strategy-signals">
+    <h3>Latest Strategy Signals</h3>
+    <p id="signal-text">No signal yet</p>
+    <p id="position-text">Current Position: NONE</p>
+</div>
 
 
 <h3>Test Orders (Use Small Qty & Safe Prices!)</h3>
@@ -66,6 +73,16 @@ socket.onmessage = function(e) {
         if (span) {
             span.innerText = data.ltp || '--';
         }
+    }
+    else if (data.status === "strategy_signal") {
+        const sig = data.signal;
+        document.getElementById('signal-text').innerText = 
+            `${sig.action} - ${sig.reason} (Confidence: ${sig.confidence || 'medium'})`;
+        document.getElementById('position-text').innerText = 
+            `Current Position: ${data.current_position?.side || 'NONE'}`;
+        
+        // Optional alert
+        alert(`Strategy Alert!\n${sig.action}: ${sig.reason}`);
     } 
     else if (data.status) {
         console.log("Status:", data.status);

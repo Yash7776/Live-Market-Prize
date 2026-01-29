@@ -40,6 +40,10 @@ EXCHANGE_MAP = {
 
 class MarketConsumer(WebsocketConsumer):
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.positions = {}  # Initialize position tracker here
+    
     def connect(self):
         self.accept()
         self.send(json.dumps({"status": "WebSocket Connected - Starting login..."}))
@@ -435,7 +439,7 @@ class MarketConsumer(WebsocketConsumer):
             if not all([symbol_token, from_date, to_date]):
                 raise ValueError("symboltoken, from_date, to_date are required")
 
-            # Correct format: single dictionary
+            # Correct format: single dictionary for getCandleData
             historic_params = {
                 "exchange": exchange,
                 "symboltoken": symbol_token,
@@ -449,35 +453,36 @@ class MarketConsumer(WebsocketConsumer):
             candle_data = self.smart_api.getCandleData(historic_params)
 
             if candle_data is None:
-                raise ValueError("getCandleData returned None - check session or params")
+                raise ValueError("getCandleData returned None - check session, params, or broker response")
 
             logger.info(f"Historical data fetched - {len(candle_data.get('data', []))} candles")
 
             if candle_data.get('status') == True and candle_data.get('data'):
                 candles = candle_data["data"]
                 if not candles:
-                    self.send(text_data=json.dumps({"error": "No candles returned"}))
+                    self.send(text_data=json.dumps({"error": "No candles returned from broker"}))
                     return
 
                 # Extract columns
                 timestamps = [c[0] for c in candles]
-                opens  = [c[1] for c in candles]
-                highs  = [c[2] for c in candles]
-                lows   = [c[3] for c in candles]
-                closes = [c[4] for c in candles]
-                volumes = [c[5] for c in candles]
+                opens     = [c[1] for c in candles]
+                highs     = [c[2] for c in candles]
+                lows      = [c[3] for c in candles]
+                closes    = [c[4] for c in candles]
+                volumes   = [c[5] for c in candles]
 
                 # Calculate indicators
                 rsi = self.calculate_rsi(closes)
                 macd_line, macd_signal, macd_hist = self.calculate_macd(closes)
                 adx, di_plus, di_minus = self.calculate_adx(highs, lows, closes)
 
-                self.send(text_data=json.dumps({
+                # Prepare response data
+                response = {
                     "status": "historical_data_with_indicators",
                     "symboltoken": symbol_token,
                     "interval": interval,
                     "num_candles": len(candles),
-                    "latest_close": closes[-1] if closes else None,
+                    "latest_close": round(closes[-1], 2) if closes else None,
                     "rsi_14": round(rsi, 2) if rsi is not None else "Not enough data",
                     "macd": {
                         "line": round(macd_line, 4) if macd_line is not None else None,
@@ -489,9 +494,23 @@ class MarketConsumer(WebsocketConsumer):
                         "di_plus": round(di_plus, 2) if di_plus is not None else None,
                         "di_minus": round(di_minus, 2) if di_minus is not None else None
                     },
-                    # Optional: send full candles if needed
+                    # Optional: include full candles if frontend needs them
                     # "data": candles
-                }))
+                }
+
+                # ────────────────────────────────────────────────
+                # Run strategies (example for current symbol)
+                # ────────────────────────────────────────────────
+                adx_signal = self.check_adx_strategy(response["adx"], symbol_token)
+                macd_signal = self.check_macd_strategy(response["macd"], symbol_token)
+
+                # Send signals if any
+                if adx_signal or macd_signal:
+                    self.handle_strategy_signal(symbol_token, adx_signal or macd_signal)
+
+                # Send the main response
+                self.send(text_data=json.dumps(response))
+
             else:
                 error_msg = candle_data.get('message', 'No historical data or failure')
                 self.send(text_data=json.dumps({
@@ -569,7 +588,108 @@ class MarketConsumer(WebsocketConsumer):
         dx = 100 * abs(di_plus - di_minus) / (di_plus + di_minus)
         adx = dx.rolling(window=period).mean()
         
-        return adx.iloc[-1], di_plus.iloc[-1], di_minus.iloc[-1]              
+        return adx.iloc[-1], di_plus.iloc[-1], di_minus.iloc[-1]
+
+    def check_adx_strategy(self, adx_info, symbol_token):
+        """
+        ADX Strategy:
+        - No position → BUY if DI+ > 20, SELL if DI- > 20
+        - LONG position → EXIT if DI+ < 18
+        - SHORT position → EXIT if DI- < 18
+        """
+        adx = adx_info.get('adx')
+        di_plus = adx_info.get('di_plus')
+        di_minus = adx_info.get('di_minus')
+
+        if any(x is None for x in [adx, di_plus, di_minus]):
+            return None  # not enough data
+
+        current_side = self.positions.get(symbol_token, {}).get('side', 'NONE')
+
+        signal = None
+
+        if current_side == 'NONE':
+            if di_plus > 20:
+                signal = {
+                    "action": "BUY",
+                    "reason": f"+DI {di_plus:.2f} > 20 (strong uptrend)",
+                    "confidence": "high" if di_plus > di_minus else "medium"
+                }
+            elif di_minus > 20:
+                signal = {
+                    "action": "SELL",
+                    "reason": f"-DI {di_minus:.2f} > 20 (strong downtrend)",
+                    "confidence": "high" if di_minus > di_plus else "medium"
+                }
+
+        elif current_side == "LONG":
+            if di_plus < 18:
+                signal = {
+                    "action": "EXIT",
+                    "reason": f"+DI fell to {di_plus:.2f} < 18 (uptrend weakening)"
+                }
+
+        elif current_side == "SHORT":
+            if di_minus < 18:
+                signal = {
+                    "action": "EXIT",
+                    "reason": f"-DI fell to {di_minus:.2f} < 18 (downtrend weakening)"
+                }
+
+        return signal
+
+    def check_macd_strategy(self, macd_info, symbol_token):
+        """
+        MACD Strategy:
+        - No position → BUY if MACD line > 0, SELL if MACD line < 0
+        - LONG → EXIT if MACD line < 0
+        - SHORT → EXIT if MACD line > 0
+        """
+        macd_line = macd_info.get('line')
+        if macd_line is None:
+            return None
+
+        current_side = self.positions.get(symbol_token, {}).get('side', 'NONE')
+
+        signal = None
+
+        if current_side == 'NONE':
+            if macd_line > 0:
+                signal = {"action": "BUY", "reason": f"MACD line {macd_line:.4f} > 0 (bullish)"}
+            elif macd_line < 0:
+                signal = {"action": "SELL", "reason": f"MACD line {macd_line:.4f} < 0 (bearish)"}
+
+        elif current_side == "LONG":
+            if macd_line < 0:
+                signal = {"action": "EXIT", "reason": "MACD line crossed below 0 (bearish crossover)"}
+
+        elif current_side == "SHORT":
+            if macd_line > 0:
+                signal = {"action": "EXIT", "reason": "MACD line crossed above 0 (bullish crossover)"}
+
+        return signal
+
+    def handle_strategy_signal(self, symbol_token, signal):
+        if signal:
+            action = signal["action"]
+            self.send(text_data=json.dumps({
+                "status": "strategy_signal",
+                "symboltoken": symbol_token,
+                "signal": signal,
+                "current_position": self.positions.get(symbol_token, {"side": "NONE"})
+            }))
+            logger.info(f"Signal generated: {action} - {signal['reason']}")
+
+            # Simulate position update (for testing — later replace with real order)
+            if action == "BUY" and self.positions.get(symbol_token, {}).get("side") == "NONE":
+                self.update_position(symbol_token, "LONG", 1062.65, quantity=1)  # use real price later
+                logger.info(f"Simulated BUY entry for {symbol_token}")
+
+            elif action == "SELL" and self.positions.get(symbol_token, {}).get("side") == "NONE":
+                self.update_position(symbol_token, "SHORT", 1062.65, quantity=1)
+
+            elif action == "EXIT" and symbol_token in self.positions:
+                self.close_position(symbol_token, 1062.65)  # use real latest_close              
         
     def disconnect(self, close_code):
         try:
