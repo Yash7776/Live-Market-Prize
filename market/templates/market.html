@@ -35,6 +35,8 @@
 </select>
 <button onclick="unsubscribeSymbol()">Unsubscribe</button>
 
+<button onclick="testHistorical()">Get 15min Historical for SBI</button>
+
 
 <h3>Test Orders (Use Small Qty & Safe Prices!)</h3>
 
@@ -182,6 +184,21 @@ function testGetOrder() {
         "action": "get_order",
         "params": {
             "orderid": oid
+        }
+    }));
+}
+</script>
+
+<script>
+function testHistorical() {
+    socket.send(JSON.stringify({
+        "action": "get_historical",
+        "params": {
+            "symboltoken": "3045",
+            "exchange": "NSE",
+            "interval": "FIFTEEN_MINUTE",
+            "from_date": "2026-01-20 09:00",
+            "to_date": "2026-01-28 15:30"
         }
     }));
 }

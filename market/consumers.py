@@ -195,6 +195,10 @@ class MarketConsumer(WebsocketConsumer):
             elif action == "relogin":
                 self.handle_relogin()
 
+            elif action == "get_historical":
+                params = data.get("params", {})
+                self.handle_get_historical(params)
+
             else:
                 self.send(text_data=json.dumps({"error": f"Unknown action: {action}"}))
 
@@ -417,6 +421,57 @@ class MarketConsumer(WebsocketConsumer):
         except Exception as e:
             self.send(text_data=json.dumps({"error": f"Re-login exception: {str(e)}"}))
             logger.error(f"Re-login exception: {str(e)}")
+            
+    def handle_get_historical(self, params):
+        try:
+            # Required params from frontend
+            symbol_token = params.get("symboltoken")
+            exchange = params.get("exchange", "NSE")
+            interval = params.get("interval", "FIFTEEN_MINUTE")
+            from_date = params.get("from_date")   # e.g. "2026-01-01 09:00"
+            to_date   = params.get("to_date")     # e.g. "2026-01-28 15:30"
+
+            if not all([symbol_token, from_date, to_date]):
+                raise ValueError("symboltoken, from_date, to_date are required")
+
+            # Correct format: single dictionary
+            historic_params = {
+                "exchange": exchange,
+                "symboltoken": symbol_token,
+                "interval": interval,
+                "fromdate": from_date,
+                "todate": to_date
+            }
+
+            logger.info(f"Fetching historical candles with params: {historic_params}")
+
+            candle_data = self.smart_api.getCandleData(historic_params)
+
+            if candle_data is None:
+                raise ValueError("getCandleData returned None - check session or params")
+
+            logger.info(f"Historical data fetched - {len(candle_data.get('data', []))} candles")
+
+            if candle_data.get('status') == True and candle_data.get('data'):
+                self.send(text_data=json.dumps({
+                    "status": "historical_data",
+                    "symboltoken": symbol_token,
+                    "interval": interval,
+                    "data": candle_data["data"]  # [[timestamp, O, H, L, C, V], ...]
+                }))
+            else:
+                error_msg = candle_data.get('message', 'No historical data or failure')
+                self.send(text_data=json.dumps({
+                    "error": error_msg,
+                    "broker_response": candle_data
+                }))
+
+        except Exception as e:
+            self.send(text_data=json.dumps({
+                "error": f"Historical fetch failed: {str(e)}",
+                "action": "get_historical"
+            }))
+            logger.error(f"Historical fetch exception: {str(e)}")              
         
     def disconnect(self, close_code):
         try:

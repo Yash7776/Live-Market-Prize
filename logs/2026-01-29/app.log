@@ -1,0 +1,41 @@
+[I 260129 09:40:42 consumers:108] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260129 09:41:15 consumers:446] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '26009', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-01 09:00', 'todate': '2026-01-28 15:30'}
+[I 260129 09:41:15 consumers:453] Historical data fetched - 0 candles
+[W 260129 09:46:32 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260129 09:46:32 smartConnect:124] in pool
+[I 260129 09:46:38 consumers:108] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260129 09:46:42 consumers:108] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260129 09:46:46 consumers:446] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '26009', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2025-12-01 09:00', 'todate': '2026-01-15 15:30'}
+[E 260129 09:46:46 smartConnect:246] Error occurred while making a POST request to https://apiconnect.angelone.in/rest/secure/angelbroking/historical/v1/getCandleData. Error: Something Went Wrong, Please Try After Sometime. URL: https://apiconnect.angelone.in/rest/secure/angelbroking/historical/v1/getCandleData, Headers: {'Content-type': 'application/json', 'X-ClientLocalIP': '127.0.0.1', 'X-ClientPublicIP': '106.193.147.98', 'X-MACAddress': '30:9c:23:7c:86:e1', 'Accept': 'application/json', 'X-PrivateKey': 'iARx2hbi', 'X-UserType': 'USER', 'X-SourceID': 'WEB'}, Request: {'exchange': 'NSE', 'symboltoken': '26009', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2025-12-01 09:00', 'todate': '2026-01-15 15:30'}, Response: {'message': 'Something Went Wrong, Please Try After Sometime', 'errorcode': 'AB1004', 'status': False, 'data': None}
+[E 260129 09:46:46 consumers:474] Historical fetch exception: object of type 'NoneType' has no len()
+[I 260129 09:49:46 consumers:108] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260129 09:49:51 consumers:446] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '26009', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-20 09:00', 'todate': '2026-01-28 15:30'}
+[E 260129 09:49:52 smartConnect:246] Error occurred while making a POST request to https://apiconnect.angelone.in/rest/secure/angelbroking/historical/v1/getCandleData. Error: Something Went Wrong, Please Try After Sometime. URL: https://apiconnect.angelone.in/rest/secure/angelbroking/historical/v1/getCandleData, Headers: {'Content-type': 'application/json', 'X-ClientLocalIP': '127.0.0.1', 'X-ClientPublicIP': '106.193.147.98', 'X-MACAddress': '30:9c:23:7c:86:e1', 'Accept': 'application/json', 'X-PrivateKey': 'iARx2hbi', 'X-UserType': 'USER', 'X-SourceID': 'WEB'}, Request: {'exchange': 'NSE', 'symboltoken': '26009', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-20 09:00', 'todate': '2026-01-28 15:30'}, Response: {'message': 'Something Went Wrong, Please Try After Sometime', 'errorcode': 'AB1004', 'status': False, 'data': None}
+[E 260129 09:49:52 consumers:474] Historical fetch exception: object of type 'NoneType' has no len()
+[I 260129 09:50:50 consumers:108] SmartAPI WebSocket Opened - Ready for subscriptions
+[W 260129 09:51:51 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260129 09:51:51 smartConnect:124] in pool
+[I 260129 09:52:13 consumers:108] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260129 09:52:18 consumers:446] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '26009', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2025-12-01 09:00', 'todate': '2026-01-15 15:30'}
+[I 260129 09:52:19 consumers:453] Historical data fetched - 0 candles
+[I 260129 09:58:24 consumers:446] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '26009', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2025-12-01 09:00', 'todate': '2026-01-15 15:30'}
+[I 260129 09:58:24 consumers:453] Historical data fetched - 0 candles
+[W 260129 09:59:43 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260129 09:59:43 smartConnect:124] in pool
+[I 260129 09:59:58 consumers:108] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260129 10:00:05 consumers:446] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '26009', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-27 09:00', 'todate': '2026-01-28 15:30'}
+[I 260129 10:00:06 consumers:453] Historical data fetched - 0 candles
+[I 260129 10:03:13 consumers:108] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260129 10:03:34 consumers:446] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3045', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-20 09:00', 'todate': '2026-01-28 15:30'}
+[I 260129 10:03:34 consumers:453] Historical data fetched - 150 candles
+[I 260129 10:07:43 consumers:108] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260129 10:07:48 consumers:446] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '26009', 'interval': 'ONE_DAY', 'fromdate': '2025-01-01 09:00', 'todate': '2026-01-28 15:30'}
+[I 260129 10:07:48 consumers:453] Historical data fetched - 0 candles
+[W 260129 10:08:20 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260129 10:08:20 smartConnect:124] in pool
+[I 260129 10:08:30 consumers:108] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260129 10:08:31 consumers:108] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260129 10:08:36 consumers:446] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3045', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-20 09:00', 'todate': '2026-01-28 15:30'}
+[I 260129 10:08:37 consumers:453] Historical data fetched - 150 candles
+[W 260129 10:15:49 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260129 10:15:49 smartConnect:124] in pool
