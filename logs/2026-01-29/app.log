@@ -99,3 +99,67 @@
 [W 260129 11:57:56 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
 [E 260129 11:57:56 consumers:135] WebSocket Error: Connection closed
 [W 260129 11:57:56 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[I 260129 11:58:41 consumers:113] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260129 11:59:12 consumers:451] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3045', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-20 09:00', 'todate': '2026-01-28 15:30'}
+[I 260129 11:59:12 consumers:458] Historical data fetched - 150 candles
+[I 260129 11:59:12 consumers:681] Signal generated: BUY - +DI 25.24 > 20 (strong uptrend)
+[I 260129 14:53:36 consumers:113] SmartAPI WebSocket Opened - Ready for subscriptions
+[W 260129 14:53:41 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260129 14:53:41 smartConnect:124] in pool
+[I 260129 14:53:51 consumers:113] SmartAPI WebSocket Opened - Ready for subscriptions
+[E 260129 14:53:51 consumers:135] WebSocket Error: Connection closed
+[W 260129 14:53:51 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[E 260129 14:53:51 consumers:135] WebSocket Error: Connection closed
+[W 260129 14:53:51 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[W 260129 14:54:34 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260129 14:54:34 smartConnect:124] in pool
+[I 260129 14:54:42 consumers:113] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260129 14:54:44 consumers:113] SmartAPI WebSocket Opened - Ready for subscriptions
+[W 260129 14:55:01 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260129 14:55:01 smartConnect:124] in pool
+[I 260129 14:55:11 consumers:113] SmartAPI WebSocket Opened - Ready for subscriptions
+[W 260129 14:55:11 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260129 14:55:22 consumers:113] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260129 14:55:29 consumers:451] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3045', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-20 09:00', 'todate': '2026-01-28 15:30'}
+[I 260129 14:55:29 consumers:458] Historical data fetched - 150 candles
+[I 260129 14:55:30 consumers:681] Signal generated: BUY - +DI 25.24 > 20 (strong uptrend)
+[I 260129 16:20:58 consumers:113] SmartAPI WebSocket Opened - Ready for subscriptions
+[W 260129 16:21:00 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260129 16:21:00 smartConnect:124] in pool
+[E 260129 16:21:02 consumers:163] Critical error in start_smartapi: Couldn't parse the JSON response received from the server: b'Access denied because of exceeding access rate'
+[I 260129 16:21:07 consumers:113] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260129 16:21:10 consumers:113] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260129 16:21:13 consumers:94] Instrument list fetched - 231982 entries
+[I 260129 16:21:13 consumers:113] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260129 16:21:16 consumers:94] Instrument list fetched - 231982 entries
+[W 260129 16:21:16 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[E 260129 16:21:26 consumers:135] WebSocket Error: Connection closed
+[W 260129 16:21:26 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[E 260129 16:21:26 consumers:135] WebSocket Error: Connection closed
+[W 260129 16:21:26 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[E 260129 16:21:26 consumers:135] WebSocket Error: Connection closed
+[W 260129 16:21:26 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[I 260129 16:23:32 smartConnect:124] in pool
+[W 260129 16:23:47 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[E 260129 16:23:58 consumers:135] WebSocket Error: Connection closed
+[W 260129 16:23:58 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[E 260129 16:23:58 consumers:135] WebSocket Error: Connection closed
+[W 260129 16:23:58 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[E 260129 16:23:58 consumers:135] WebSocket Error: Connection closed
+[W 260129 16:23:58 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[I 260129 17:29:47 smartConnect:124] in pool
+[W 260129 17:29:56 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[E 260129 17:30:06 consumers:135] WebSocket Error: Connection closed
+[W 260129 17:30:06 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[E 260129 17:30:06 consumers:135] WebSocket Error: Connection closed
+[W 260129 17:30:06 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[E 260129 17:30:06 consumers:135] WebSocket Error: Connection closed
+[W 260129 17:30:06 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[I 260129 18:07:54 smartConnect:124] in pool
+[W 260129 18:08:00 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[E 260129 18:08:10 consumers:135] WebSocket Error: Connection closed
+[W 260129 18:08:10 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[E 260129 18:08:10 consumers:135] WebSocket Error: Connection closed
+[W 260129 18:08:10 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[E 260129 18:08:10 consumers:135] WebSocket Error: Connection closed
+[W 260129 18:08:10 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
