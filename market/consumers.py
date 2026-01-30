@@ -12,7 +12,7 @@ from SmartApi import SmartConnect
 from SmartApi.smartWebSocketV2 import SmartWebSocketV2
 from .connection import CLIENT_CODE, PIN, TOTP_SECRET, setup_connection
 from .utils.indicators import calculate_rsi, calculate_macd, calculate_adx
-
+from .utils.strategies import check_adx_strategy, check_macd_strategy
 # Official exchangeType mapping from SmartAPI SDK source
 EXCHANGE_MAP = {
     "NSE": 1,    # NSE_CM - Cash / Equity + Indices
@@ -311,7 +311,7 @@ class MarketConsumer(WebsocketConsumer):
         except Exception as e:
             self.send(text_data=json.dumps({"error": f"Re-login exception: {str(e)}"}))
             logger.error(f"Re-login exception: {str(e)}")
-            
+
     def handle_get_historical(self, params):
         try:
             # Required params from frontend
@@ -384,16 +384,26 @@ class MarketConsumer(WebsocketConsumer):
                 }
 
                 # ────────────────────────────────────────────────
-                # Run strategies (example for current symbol)
+                # TEMPORARY TEST CODE - Force a BUY signal every time (for testing)
+                # Remove or comment out after confirming the log appears
                 # ────────────────────────────────────────────────
-                adx_signal = self.check_adx_strategy(response["adx"], symbol_token)
-                macd_signal = self.check_macd_strategy(response["macd"], symbol_token)
+                # test_signal = {
+                #     "action": "BUY",
+                #     "reason": "Test forced BUY signal (debug mode)"
+                # }
+                # self.handle_strategy_signal(symbol_token, test_signal, latest_close=response["latest_close"])
 
-                # Send signals if any
-                if adx_signal or macd_signal:
-                    self.handle_strategy_signal(symbol_token, adx_signal or macd_signal)
+                # ────────────────────────────────────────────────
+                # Normal strategy checks (keep these)
+                # ────────────────────────────────────────────────
+                adx_signal  = check_adx_strategy(response["adx"], symbol_token)
+                macd_signal = check_macd_strategy(response["macd"], symbol_token)
 
-                # Send the main response
+                # Send real signals if any (will run alongside test signal)
+                for sig in [s for s in [adx_signal, macd_signal] if s]:
+                    self.handle_strategy_signal(symbol_token, sig, latest_close=response["latest_close"])
+
+                # Send the main response to frontend
                 self.send(text_data=json.dumps(response))
 
             else:
@@ -410,107 +420,109 @@ class MarketConsumer(WebsocketConsumer):
             }))
             logger.error(f"Historical fetch exception: {str(e)}")
 
-    def check_adx_strategy(self, adx_info, symbol_token):
+    def handle_strategy_signal(self, symbol_token, signal, latest_close=None):
         """
-        ADX Strategy:
-        - No position → BUY if DI+ > 20, SELL if DI- > 20
-        - LONG position → EXIT if DI+ < 18
-        - SHORT position → EXIT if DI- < 18
+        Handle strategy signal:
+        - Log signal or no-signal
+        - Send to frontend (strategy_signal or no_signal)
+        - Simulate position update (entry/exit) using latest_close if available
         """
-        adx = adx_info.get('adx')
-        di_plus = adx_info.get('di_plus')
-        di_minus = adx_info.get('di_minus')
+        entry_price = latest_close if latest_close is not None else 1062.65
 
-        if any(x is None for x in [adx, di_plus, di_minus]):
-            return None  # not enough data
+        current_pos = self.positions.get(symbol_token, {"side": "NONE"})
 
-        current_side = self.positions.get(symbol_token, {}).get('side', 'NONE')
+        # Try to get symbol name from map (fallback to token)
+        symbol_name = self.token_symbol_map.get(symbol_token, symbol_token)
 
-        signal = None
-
-        if current_side == 'NONE':
-            if di_plus > 20:
-                signal = {
-                    "action": "BUY",
-                    "reason": f"+DI {di_plus:.2f} > 20 (strong uptrend)",
-                    "confidence": "high" if di_plus > di_minus else "medium"
-                }
-            elif di_minus > 20:
-                signal = {
-                    "action": "SELL",
-                    "reason": f"-DI {di_minus:.2f} > 20 (strong downtrend)",
-                    "confidence": "high" if di_minus > di_plus else "medium"
-                }
-
-        elif current_side == "LONG":
-            if di_plus < 18:
-                signal = {
-                    "action": "EXIT",
-                    "reason": f"+DI fell to {di_plus:.2f} < 18 (uptrend weakening)"
-                }
-
-        elif current_side == "SHORT":
-            if di_minus < 18:
-                signal = {
-                    "action": "EXIT",
-                    "reason": f"-DI fell to {di_minus:.2f} < 18 (downtrend weakening)"
-                }
-
-        return signal
-
-    def check_macd_strategy(self, macd_info, symbol_token):
-        """
-        MACD Strategy:
-        - No position → BUY if MACD line > 0, SELL if MACD line < 0
-        - LONG → EXIT if MACD line < 0
-        - SHORT → EXIT if MACD line > 0
-        """
-        macd_line = macd_info.get('line')
-        if macd_line is None:
-            return None
-
-        current_side = self.positions.get(symbol_token, {}).get('side', 'NONE')
-
-        signal = None
-
-        if current_side == 'NONE':
-            if macd_line > 0:
-                signal = {"action": "BUY", "reason": f"MACD line {macd_line:.4f} > 0 (bullish)"}
-            elif macd_line < 0:
-                signal = {"action": "SELL", "reason": f"MACD line {macd_line:.4f} < 0 (bearish)"}
-
-        elif current_side == "LONG":
-            if macd_line < 0:
-                signal = {"action": "EXIT", "reason": "MACD line crossed below 0 (bearish crossover)"}
-
-        elif current_side == "SHORT":
-            if macd_line > 0:
-                signal = {"action": "EXIT", "reason": "MACD line crossed above 0 (bullish crossover)"}
-
-        return signal
-
-    def handle_strategy_signal(self, symbol_token, signal):
         if signal:
             action = signal["action"]
+            reason = signal["reason"]
+            
+            # Log the signal
+            logger.info(
+                f"Signal generated for {symbol_name} ({symbol_token}): "
+                f"{action} - {reason} | Current position: {current_pos['side']}"
+            )
+
+            # Send signal to frontend
             self.send(text_data=json.dumps({
                 "status": "strategy_signal",
                 "symboltoken": symbol_token,
+                "symbol": symbol_name,
                 "signal": signal,
-                "current_position": self.positions.get(symbol_token, {"side": "NONE"})
+                "current_position": current_pos
             }))
-            logger.info(f"Signal generated: {action} - {signal['reason']}")
 
-            # Simulate position update (for testing — later replace with real order)
-            if action == "BUY" and self.positions.get(symbol_token, {}).get("side") == "NONE":
-                self.update_position(symbol_token, "LONG", 1062.65, quantity=1)  # use real price later
-                logger.info(f"Simulated BUY entry for {symbol_token}")
+            # Simulate position update (safe for testing)
+            if action == "BUY" and current_pos["side"] == "NONE":
+                entry_price = latest_close if latest_close is not None else 1062.65  # fallback
+                self.update_position(symbol_token, "LONG", entry_price, quantity=1)
+                logger.info(f"Simulated BUY entry for {symbol_name} @ {entry_price}")
 
-            elif action == "SELL" and self.positions.get(symbol_token, {}).get("side") == "NONE":
-                self.update_position(symbol_token, "SHORT", 1062.65, quantity=1)
+            elif action == "SELL" and current_pos["side"] == "NONE":
+                entry_price = latest_close if latest_close is not None else 1062.65
+                self.update_position(symbol_token, "SHORT", entry_price, quantity=1)
+                logger.info(f"Simulated SELL entry for {symbol_name} @ {entry_price}")
 
             elif action == "EXIT" and symbol_token in self.positions:
-                self.close_position(symbol_token, 1062.65)  # use real latest_close              
-        
+                exit_price = latest_close if latest_close is not None else 1062.65
+                self.close_position(symbol_token, exit_price)
+                logger.info(f"Simulated EXIT for {symbol_name} @ {exit_price} | PNL updated")
+
+        else:
+            # Log when no signal (helps debugging)
+            logger.info(
+                f"No signal for {symbol_name} ({symbol_token}) | "
+                f"Current position: {current_pos['side']}"
+            )
+
+            # Optional: inform frontend there is no action right now
+            self.send(text_data=json.dumps({
+                "status": "no_signal",
+                "symboltoken": symbol_token,
+                "symbol": symbol_name,
+                "current_position": current_pos
+            }))
+
+    def update_position(self, symbol_token, side, entry_price, quantity=1):
+        """
+        Create or update a position (LONG or SHORT)
+        """
+        self.positions[symbol_token] = {
+            "side": side,               # "LONG" or "SHORT"
+            "entry_price": entry_price,
+            "quantity": quantity,
+            "entry_time": pd.Timestamp.now(tz='Asia/Kolkata').isoformat(),
+            "exchange": "NSE",          # can make dynamic later
+            "target": None,
+            "stoploss": None,
+            "pnl": 0.0
+        }
+        logger.info(f"Position opened: {side} {symbol_token} @ {entry_price} (qty: {quantity})")
+
+    def close_position(self, symbol_token, exit_price):
+        """
+        Close a position and calculate PNL
+        """
+        if symbol_token not in self.positions:
+            logger.warning(f"No position to close for {symbol_token}")
+            return
+
+        pos = self.positions[symbol_token]
+        if pos["side"] == "LONG":
+            pnl = (exit_price - pos["entry_price"]) * pos["quantity"]
+        elif pos["side"] == "SHORT":
+            pnl = (pos["entry_price"] - exit_price) * pos["quantity"]
+        else:
+            pnl = 0.0
+
+        pos["exit_price"] = exit_price
+        pos["exit_time"] = pd.Timestamp.now(tz='Asia/Kolkata').isoformat()
+        pos["pnl"] = round(pnl, 2)
+        pos["mtm"] = round(pnl, 2)  # mark-to-market = realized PNL
+
+        logger.info(f"Position closed: {symbol_token} {pos['side']} @ {exit_price} | PNL: {pnl}")
+
     def disconnect(self, close_code):
         try:
             if self.sws:

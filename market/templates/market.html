@@ -92,8 +92,11 @@ socket.onmessage = function(e) {
     } 
     else if (data.error) {
         console.error("Error:", data.error);
-        alert("Order failed: " + data.error + 
-              (data.errorcode ? " (" + data.errorcode + ")" : ""));
+        let msg = data.error;
+        if (msg.includes("exceeding access rate")) {
+            msg = "Rate limit reached! Wait 1–2 minutes and try again.";
+        }
+        alert("Error: " + msg);
     }
 };
 const symbolDivs = {};  // Track added symbols to avoid duplicates
@@ -207,17 +210,32 @@ function testGetOrder() {
 </script>
 
 <script>
+
 function testHistorical() {
-    socket.send(JSON.stringify({
-        "action": "get_historical",
-        "params": {
-            "symboltoken": "3045",
-            "exchange": "NSE",
-            "interval": "FIFTEEN_MINUTE",
-            "from_date": "2026-01-20 09:00",
-            "to_date": "2026-01-28 15:30"
-        }
-    }));
+    // Disable button temporarily to avoid spam
+    const btn = document.querySelector('button[onclick="testHistorical()"]');
+    btn.disabled = true;
+    btn.innerText = "Waiting... (rate limit)";
+
+    // Wait 5 seconds before sending
+    setTimeout(() => {
+        socket.send(JSON.stringify({
+            "action": "get_historical",
+            "params": {
+                "symboltoken": "99926000",
+                "exchange": "NSE",
+                "interval": "FIFTEEN_MINUTE",
+                "from_date": "2026-01-25 09:00",
+                "to_date": "2026-01-28 15:30"
+            }
+        }));
+
+        // Re-enable button after 10 seconds (safe)
+        setTimeout(() => {
+            btn.disabled = false;
+            btn.innerText = "Get Historical";
+        }, 10000);
+    }, 5000);
 }
 </script>
 
