@@ -384,22 +384,19 @@ class MarketConsumer(WebsocketConsumer):
                 }
 
                 # ────────────────────────────────────────────────
-                # TEMPORARY TEST CODE - Force a BUY signal every time (for testing)
-                # Remove or comment out after confirming the log appears
+                # Check current position for this symbol
                 # ────────────────────────────────────────────────
-                # test_signal = {
-                #     "action": "BUY",
-                #     "reason": "Test forced BUY signal (debug mode)"
-                # }
-                # self.handle_strategy_signal(symbol_token, test_signal, latest_close=response["latest_close"])
+                current_side = self.positions.get(symbol_token, {}).get('side', 'NONE')
+                
+                # ────────────────────────────────────────────────
+                # Generate strategy signals with current position
+                # ────────────────────────────────────────────────
+                adx_signal  = check_adx_strategy(response["adx"], current_side)
+                macd_signal = check_macd_strategy(response["macd"], current_side)
 
-                # ────────────────────────────────────────────────
-                # Normal strategy checks (keep these)
-                # ────────────────────────────────────────────────
-                adx_signal  = check_adx_strategy(response["adx"], symbol_token)
-                macd_signal = check_macd_strategy(response["macd"], symbol_token)
+                logger.info(f"Strategy check for {symbol_token}: ADX={adx_signal}, MACD={macd_signal}, CurrentSide={current_side}")
 
-                # Send real signals if any (will run alongside test signal)
+                # Send signals if any
                 for sig in [s for s in [adx_signal, macd_signal] if s]:
                     self.handle_strategy_signal(symbol_token, sig, latest_close=response["latest_close"])
 

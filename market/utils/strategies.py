@@ -1,4 +1,5 @@
 # market/utils/strategies.py
+from logzero import logger
 
 def check_adx_strategy(adx_info, current_side='NONE'):
     """
@@ -11,23 +12,24 @@ def check_adx_strategy(adx_info, current_side='NONE'):
     di_plus = adx_info.get('di_plus')
     di_minus = adx_info.get('di_minus')
 
-    if any(x is None for x in [adx, di_plus, di_minus]):
+    # Check if any critical values are None or string (not enough data)
+    if any(isinstance(x, str) or x is None for x in [di_plus, di_minus]):
         return None  # not enough data
 
     signal = None
 
     if current_side == 'NONE':
-        if di_plus > 20:
+        if di_plus > 20 and di_plus > di_minus:
             signal = {
                 "action": "BUY",
                 "reason": f"+DI {di_plus:.2f} > 20 (strong uptrend)",
-                "confidence": "high" if di_plus > di_minus else "medium"
+                "confidence": "high"
             }
-        elif di_minus > 20:
+        elif di_minus > 20 and di_minus > di_plus:
             signal = {
                 "action": "SELL",
                 "reason": f"-DI {di_minus:.2f} > 20 (strong downtrend)",
-                "confidence": "high" if di_minus > di_plus else "medium"
+                "confidence": "high"
             }
 
     elif current_side == "LONG":
@@ -43,7 +45,7 @@ def check_adx_strategy(adx_info, current_side='NONE'):
                 "action": "EXIT",
                 "reason": f"-DI fell to {di_minus:.2f} < 18 (downtrend weakening)"
             }
-
+    logger.info(f"ADX Signal: {signal}")
     return signal
 
 def check_macd_strategy(macd_info, current_side='NONE'):
@@ -55,6 +57,7 @@ def check_macd_strategy(macd_info, current_side='NONE'):
     """
     macd_line = macd_info.get('line')
     if macd_line is None:
+        logger.warning("MACD line is None - not enough data")
         return None
 
     signal = None
@@ -72,5 +75,5 @@ def check_macd_strategy(macd_info, current_side='NONE'):
     elif current_side == "SHORT":
         if macd_line > 0:
             signal = {"action": "EXIT", "reason": "MACD line crossed above 0 (bullish crossover)"}
-
+    logger.info(f"MACD Signal: {signal}")
     return signal
