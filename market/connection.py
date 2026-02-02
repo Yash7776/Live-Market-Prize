@@ -49,6 +49,13 @@ def setup_connection(consumer):
         response = requests.get(INSTRUMENT_URL)
         if response.status_code == 200:
             consumer.instrument_list = response.json()
+            consumer.token_to_symbol = {}
+            for instr in consumer.instrument_list:
+                token = instr.get("token")
+                ts = instr.get("symbol")  # this is "SBIN-EQ", "NIFTY50", etc.
+                if token and ts:
+                    consumer.token_to_symbol[token] = ts
+            logger.info(f"Created token-to-symbol map with {len(consumer.token_to_symbol)} entries")
             logger.info(f"Instrument list fetched - {len(consumer.instrument_list)} entries")
         else:
             logger.error("Failed to fetch instrument list")

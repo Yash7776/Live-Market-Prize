@@ -617,3 +617,110 @@
 [I 260202 14:19:38 strategies:78] MACD Signal: {'action': 'BUY', 'reason': 'MACD line 0.4575 > 0 (bullish)'}
 [I 260202 14:19:38 consumers:386] Strategy check for 3325: ADX={'action': 'BUY', 'reason': '+DI 27.82 > 20 (strong uptrend)', 'confidence': 'high'}, MACD={'action': 'BUY', 'reason': 'MACD line 0.4575 > 0 (bullish)'}, CurrentSide=NONE
 [I 260202 14:19:38 consumers:449] Opened LONG 3325 @ 152.00 | Lots=1 | Qty=50 | Target=154.28 | SL=150.48
+[I 260202 14:20:58 connection:69] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260202 14:21:19 consumers:331] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '99926000', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[I 260202 14:21:19 consumers:338] Historical data fetched - 50 candles
+[I 260202 14:21:19 strategies:48] ADX Signal: {'action': 'BUY', 'reason': '+DI 25.34 > 20 (strong uptrend)', 'confidence': 'high'}
+[I 260202 14:21:19 strategies:78] MACD Signal: {'action': 'BUY', 'reason': 'MACD line 30.6986 > 0 (bullish)'}
+[I 260202 14:21:19 consumers:386] Strategy check for 99926000: ADX={'action': 'BUY', 'reason': '+DI 25.34 > 20 (strong uptrend)', 'confidence': 'high'}, MACD={'action': 'BUY', 'reason': 'MACD line 30.6986 > 0 (bullish)'}, CurrentSide=NONE
+[I 260202 14:21:19 consumers:449] Opened LONG 99926000 @ 25348.05 | Lots=1 | Qty=50 | Target=25728.27 | SL=25094.57
+[I 260202 14:35:24 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260202 14:35:44 consumers:331] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '99926000', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[E 260202 14:35:44 smartConnect:246] Error occurred while making a POST request to https://apiconnect.angelone.in/rest/secure/angelbroking/historical/v1/getCandleData. Error: Something Went Wrong, Please Try After Sometime. URL: https://apiconnect.angelone.in/rest/secure/angelbroking/historical/v1/getCandleData, Headers: {'Content-type': 'application/json', 'X-ClientLocalIP': '127.0.0.1', 'X-ClientPublicIP': '106.193.147.98', 'X-MACAddress': '30:9c:23:7c:86:e1', 'Accept': 'application/json', 'X-PrivateKey': 'iARx2hbi', 'X-UserType': 'USER', 'X-SourceID': 'WEB'}, Request: {'exchange': 'NSE', 'symboltoken': '99926000', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}, Response: {'message': 'Something Went Wrong, Please Try After Sometime', 'errorcode': 'AB1004', 'status': False, 'data': None}
+[E 260202 14:35:44 consumers:405] Historical fetch exception: object of type 'NoneType' has no len()
+    Traceback (most recent call last):
+      File "D:\Yash\smart_trading\myvenv\Lib\site-packages\asgiref\sync.py", line 361, in main_wrap
+        raise exc_info[1]
+      File "D:\Yash\smart_trading\market\consumers.py", line 338, in handle_get_historical
+        logger.info(f"Historical data fetched - {len(candle_data.get('data', []))} candles")
+                                                 ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    TypeError: object of type 'NoneType' has no len()
+[I 260202 14:36:10 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260202 14:36:18 consumers:331] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '99926000', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[E 260202 14:36:18 consumers:405] Historical fetch exception: Couldn't parse the JSON response received from the server: b'Access denied because of exceeding access rate'
+    Traceback (most recent call last):
+      File "D:\Yash\smart_trading\myvenv\Lib\site-packages\SmartApi\smartConnect.py", line 230, in _request
+        data = json.loads(r.content.decode("utf8"))
+      File "C:\Users\Admin\AppData\Local\Programs\Python\Python314\Lib\json\__init__.py", line 346, in loads
+        return _default_decoder.decode(s)
+               ~~~~~~~~~~~~~~~~~~~~~~~^^^
+      File "C:\Users\Admin\AppData\Local\Programs\Python\Python314\Lib\json\decoder.py", line 345, in decode
+        obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+                   ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+      File "C:\Users\Admin\AppData\Local\Programs\Python\Python314\Lib\json\decoder.py", line 363, in raw_decode
+        raise JSONDecodeError("Expecting value", s, err.value) from None
+    json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+    
+    During handling of the above exception, another exception occurred:
+    
+    Traceback (most recent call last):
+      File "D:\Yash\smart_trading\myvenv\Lib\site-packages\asgiref\sync.py", line 361, in main_wrap
+        raise exc_info[1]
+      File "D:\Yash\smart_trading\market\consumers.py", line 333, in handle_get_historical
+        candle_data = self.smart_api.getCandleData(historic_params)
+      File "D:\Yash\smart_trading\myvenv\Lib\site-packages\SmartApi\smartConnect.py", line 465, in getCandleData
+        getCandleDataResponse=self._postRequest("api.candle.data",historicDataParams)
+      File "D:\Yash\smart_trading\myvenv\Lib\site-packages\SmartApi\smartConnect.py", line 263, in _postRequest
+        return self._request(route, "POST", params)
+               ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+      File "D:\Yash\smart_trading\myvenv\Lib\site-packages\SmartApi\smartConnect.py", line 233, in _request
+        raise ex.DataException("Couldn't parse the JSON response received from the server: {content}".format(
+            content=r.content))
+    SmartApi.smartExceptions.DataException: Couldn't parse the JSON response received from the server: b'Access denied because of exceeding access rate'
+[I 260202 14:36:47 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260202 14:37:03 consumers:331] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '99926000', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[I 260202 14:37:04 consumers:338] Historical data fetched - 50 candles
+[I 260202 14:37:04 strategies:48] ADX Signal: {'action': 'BUY', 'reason': '+DI 25.34 > 20 (strong uptrend)', 'confidence': 'high'}
+[I 260202 14:37:04 strategies:78] MACD Signal: {'action': 'BUY', 'reason': 'MACD line 30.6986 > 0 (bullish)'}
+[I 260202 14:37:04 consumers:386] Strategy check for 99926000: ADX={'action': 'BUY', 'reason': '+DI 25.34 > 20 (strong uptrend)', 'confidence': 'high'}, MACD={'action': 'BUY', 'reason': 'MACD line 30.6986 > 0 (bullish)'}, CurrentSide=NONE
+[I 260202 14:37:04 consumers:453] Opened LONG Nifty 50 @ 25348.05 | Lots=1 | Qty=50 | Target=25728.27 | SL=25094.57
+[I 260202 14:41:33 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260202 14:41:45 consumers:331] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3045', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[E 260202 14:41:45 consumers:405] Historical fetch exception: Couldn't parse the JSON response received from the server: b'Access denied because of exceeding access rate'
+    Traceback (most recent call last):
+      File "D:\Yash\smart_trading\myvenv\Lib\site-packages\SmartApi\smartConnect.py", line 230, in _request
+        data = json.loads(r.content.decode("utf8"))
+      File "C:\Users\Admin\AppData\Local\Programs\Python\Python314\Lib\json\__init__.py", line 346, in loads
+        return _default_decoder.decode(s)
+               ~~~~~~~~~~~~~~~~~~~~~~~^^^
+      File "C:\Users\Admin\AppData\Local\Programs\Python\Python314\Lib\json\decoder.py", line 345, in decode
+        obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+                   ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+      File "C:\Users\Admin\AppData\Local\Programs\Python\Python314\Lib\json\decoder.py", line 363, in raw_decode
+        raise JSONDecodeError("Expecting value", s, err.value) from None
+    json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+    
+    During handling of the above exception, another exception occurred:
+    
+    Traceback (most recent call last):
+      File "D:\Yash\smart_trading\myvenv\Lib\site-packages\asgiref\sync.py", line 361, in main_wrap
+        raise exc_info[1]
+      File "D:\Yash\smart_trading\market\consumers.py", line 333, in handle_get_historical
+        candle_data = self.smart_api.getCandleData(historic_params)
+      File "D:\Yash\smart_trading\myvenv\Lib\site-packages\SmartApi\smartConnect.py", line 465, in getCandleData
+        getCandleDataResponse=self._postRequest("api.candle.data",historicDataParams)
+      File "D:\Yash\smart_trading\myvenv\Lib\site-packages\SmartApi\smartConnect.py", line 263, in _postRequest
+        return self._request(route, "POST", params)
+               ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+      File "D:\Yash\smart_trading\myvenv\Lib\site-packages\SmartApi\smartConnect.py", line 233, in _request
+        raise ex.DataException("Couldn't parse the JSON response received from the server: {content}".format(
+            content=r.content))
+    SmartApi.smartExceptions.DataException: Couldn't parse the JSON response received from the server: b'Access denied because of exceeding access rate'
+[W 260202 14:41:52 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260202 14:41:52 smartConnect:124] in pool
+[I 260202 14:41:58 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260202 14:42:02 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260202 14:42:07 consumers:331] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3045', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[I 260202 14:42:08 consumers:338] Historical data fetched - 50 candles
+[I 260202 14:42:08 strategies:48] ADX Signal: {'action': 'BUY', 'reason': '+DI 25.24 > 20 (strong uptrend)', 'confidence': 'high'}
+[I 260202 14:42:08 strategies:78] MACD Signal: {'action': 'BUY', 'reason': 'MACD line 2.8855 > 0 (bullish)'}
+[I 260202 14:42:08 consumers:386] Strategy check for 3045: ADX={'action': 'BUY', 'reason': '+DI 25.24 > 20 (strong uptrend)', 'confidence': 'high'}, MACD={'action': 'BUY', 'reason': 'MACD line 2.8855 > 0 (bullish)'}, CurrentSide=NONE
+[I 260202 14:42:08 consumers:453] Opened LONG SBIN-EQ @ 1062.65 | Lots=1 | Qty=50 | Target=1078.59 | SL=1052.02
+[I 260202 14:52:06 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260202 14:52:22 consumers:331] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3045', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[I 260202 14:52:22 consumers:338] Historical data fetched - 50 candles
+[I 260202 14:52:22 consumers:388] [TEST] Forcing exit on token 3045 @ 1067.65
+[I 260202 14:52:22 consumers:513] Position CLOSED | Token=3045 | Exit price=1067.65 | Exit time=2026-02-02 09:22:22.856225+00:00 | Qty=50 | MTM=250.00 | Reason=TEST: Forced exit to verify saving
+[I 260202 14:52:22 strategies:48] ADX Signal: None
+[I 260202 14:52:22 strategies:78] MACD Signal: None
+[I 260202 14:52:22 consumers:399] Strategy check for 3045: ADX=None, MACD=None, CurrentSide=OPEN

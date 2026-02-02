@@ -375,10 +375,23 @@ class MarketConsumer(WebsocketConsumer):
 
                 # Get current position from DB
                 open_pos = self.get_open_position_for_token(symbol_token)
-                # No .side field → use simple status string
-                if open_pos:
-                    self.close_position_db(symbol_token, response["latest_close"] + 5, "Test force exit")
                 current_side = "OPEN" if open_pos else "NONE"
+
+                # ────────────────────────────────────────────────
+                # TEMPORARY TEST: Force close if position exists
+                # This helps you verify that exit_price & exit_datetime are saving
+                # Remove or comment out this block after testing
+                # ────────────────────────────────────────────────
+                # if open_pos:
+                #     # Use latest close + small offset (or any value you want to test)
+                #     test_exit_price = response["latest_close"] + 5  # or -5, or fixed value like 1080
+                #     logger.info(f"[TEST] Forcing exit on token {symbol_token} @ {test_exit_price}")
+                #     self.close_position_db(
+                #         symbol_token=symbol_token,
+                #         exit_price=test_exit_price,
+                #         exit_reason="TEST: Forced exit to verify saving"
+                #     )
+                # # ────────────────────────────────────────────────
 
                 adx_signal  = check_adx_strategy(response["adx"], current_side)
                 macd_signal = check_macd_strategy(response["macd"], current_side)
@@ -416,7 +429,11 @@ class MarketConsumer(WebsocketConsumer):
 
     def open_position_db(self, symbol_token, side, entry_price, quantity=1, lots=1):
         try:
-            symbol_name = self.token_symbol_map.get(symbol_token, symbol_token)
+            symbol_name = (
+                self.token_symbol_map.get(symbol_token) or
+                self.token_to_symbol.get(symbol_token) or
+                symbol_token   # worst case fallback to token
+            )
             exchange = "NSE"
 
             # Calculate target & stoploss (example logic)
