@@ -9,6 +9,8 @@ from logzero import logger
 from SmartApi import SmartConnect
 from SmartApi.smartWebSocketV2 import SmartWebSocketV2
 
+from market.models import Position
+
 load_dotenv()
 
 # Load the same constants here (safe duplication for now)
@@ -69,19 +71,47 @@ def setup_connection(consumer):
 
         def on_data(wsapp, message):
             token = message.get("token")
-            ltp = message.get("last_traded_price")
-
-            if not ltp:
+            ltp_raw = message.get("last_traded_price")
+            if not ltp_raw:
                 return
 
-            price = ltp / 100
+            ltp = ltp_raw / 100
             symbol = consumer.token_symbol_map.get(token, "UNKNOWN")
 
-            consumer.send(text_data=json.dumps({
+            # Send LTP as before
+            consumer.send(json.dumps({
                 "symbol": symbol,
                 "token": token,
-                "ltp": price
+                "ltp": ltp
             }))
+
+            # ── NEW: Update MTM for open positions ──
+            try:
+                open_position = Position.objects.filter(
+                    token=token,
+                    status="OPEN"
+                ).first()
+
+                if open_position and open_position.entry_price is not None:
+                    # Simple approximation (no direction stored → assume LONG)
+                    # Later: improve if you add direction logic
+                    mtm = (ltp - open_position.entry_price) * 1  # qty=1
+
+                    if abs(mtm - open_position.mtm) > 0.05:   # update only if meaningful change
+                        open_position.mtm = round(mtm, 2)
+                        open_position.save(update_fields=['mtm'])
+
+                        consumer.send(json.dumps({
+                            "status": "mtm_update",
+                            "token": token,
+                            "symbol": symbol,
+                            "ltp": ltp,
+                            "mtm": open_position.mtm,
+                            "entry_price": open_position.entry_price
+                        }))
+                        logger.debug(f"MTM updated for {symbol} ({token}): {open_position.mtm:.2f}")
+            except Exception as e:
+                logger.error(f"MTM update failed for token {token}: {e}")
 
         def on_error(wsapp, error):
             logger.error(f"WebSocket Error: {error}")

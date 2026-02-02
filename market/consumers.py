@@ -14,7 +14,7 @@ from SmartApi.smartWebSocketV2 import SmartWebSocketV2
 from .connection import CLIENT_CODE, PIN, TOTP_SECRET, setup_connection
 from .utils.indicators import calculate_rsi, calculate_macd, calculate_adx
 from .utils.strategies import check_adx_strategy, check_macd_strategy
-from .models import Position   # ← Import your Position model
+from .models import Position
 
 # Official exchangeType mapping from SmartAPI SDK source
 EXCHANGE_MAP = {
@@ -33,7 +33,6 @@ class MarketConsumer(WebsocketConsumer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # No more in-memory positions dict
 
     def connect(self):
         self.accept()
@@ -47,7 +46,6 @@ class MarketConsumer(WebsocketConsumer):
         self.auth_token = None
         self.feed_token = None
 
-        # Start SmartAPI login + socket in background thread
         threading.Thread(target=self.start_smartapi, daemon=True).start()
 
     def start_smartapi(self):
@@ -92,20 +90,14 @@ class MarketConsumer(WebsocketConsumer):
                 self.handle_get_historical(params)
 
             else:
-                self.send(text_data=json.dumps({"error": f"Unknown action: {action}"}))
+                self.send(json.dumps({"error": f"Unknown action: {action}"}))
 
         except Exception as e:
-            self.send(text_data=json.dumps({
-                "error": str(e)
-            }))
-
-    # ────────────────────────────────────────────────
-    # Subscribe / Unsubscribe (unchanged)
-    # ────────────────────────────────────────────────
+            self.send(json.dumps({"error": str(e)}))
 
     def handle_subscribe(self, tradingsymbols, exchange):
         if not self.instrument_list:
-            return self.send(text_data=json.dumps({"error": "Instrument list not loaded"}))
+            return self.send(json.dumps({"error": "Instrument list not loaded"}))
 
         exchange_type = EXCHANGE_MAP.get(exchange, 1)
         tokens = []
@@ -130,11 +122,11 @@ class MarketConsumer(WebsocketConsumer):
 
             self.token_symbol_map.update(new_token_symbol_map)
 
-            self.send(text_data=json.dumps({"status": "subscribed", "tradingsymbols": tradingsymbols}))
+            self.send(json.dumps({"status": "subscribed", "tradingsymbols": tradingsymbols}))
 
     def handle_unsubscribe(self, tradingsymbols, exchange):
         if not self.instrument_list:
-            return self.send(text_data=json.dumps({"error": "Instrument list not loaded"}))
+            return self.send(json.dumps({"error": "Instrument list not loaded"}))
 
         exchange_type = EXCHANGE_MAP.get(exchange, 1)
         tokens = []
@@ -159,11 +151,7 @@ class MarketConsumer(WebsocketConsumer):
                 if token in self.token_symbol_map:
                     del self.token_symbol_map[token]
 
-            self.send(text_data=json.dumps({"status": "unsubscribed", "tradingsymbols": tradingsymbols}))
-
-    # ────────────────────────────────────────────────
-    # Order handling methods (unchanged)
-    # ────────────────────────────────────────────────
+            self.send(json.dumps({"status": "unsubscribed", "tradingsymbols": tradingsymbols}))
 
     def handle_place_order(self, params):
         try:
@@ -172,10 +160,7 @@ class MarketConsumer(WebsocketConsumer):
 
             if order_response is None:
                 error_msg = "placeOrder returned None - possible session invalid, network issue, or broker restriction"
-                self.send(text_data=json.dumps({
-                    "error": error_msg,
-                    "broker_response": None
-                }))
+                self.send(json.dumps({"error": error_msg, "broker_response": None}))
                 logger.error(error_msg)
                 return
 
@@ -183,34 +168,34 @@ class MarketConsumer(WebsocketConsumer):
                 if order_response.get('status') is True:
                     order_id = order_response.get('data', {}).get('orderid')
                     if order_id:
-                        self.send(text_data=json.dumps({
+                        self.send(json.dumps({
                             "status": "order_placed",
                             "orderid": order_id,
                             "data": order_response
                         }))
                         logger.info(f"Order placed successfully - ID: {order_id}")
                     else:
-                        self.send(text_data=json.dumps({
+                        self.send(json.dumps({
                             "error": "Order accepted but no orderid returned",
                             "broker_response": order_response
                         }))
                 else:
                     error_msg = order_response.get('message', 'Order placement rejected by broker')
-                    self.send(text_data=json.dumps({
+                    self.send(json.dumps({
                         "error": error_msg,
                         "errorcode": order_response.get('errorcode'),
                         "broker_response": order_response
                     }))
                     logger.error(f"Order rejected: {order_response}")
             else:
-                self.send(text_data=json.dumps({
+                self.send(json.dumps({
                     "error": f"Unexpected response type from placeOrder: {type(order_response)}",
                     "broker_response": str(order_response)
                 }))
                 logger.error(f"Unexpected type: {type(order_response)} - {order_response}")
 
         except Exception as e:
-            self.send(text_data=json.dumps({
+            self.send(json.dumps({
                 "error": f"Exception during placeOrder: {str(e)}",
                 "action": "place_order"
             }))
@@ -225,7 +210,7 @@ class MarketConsumer(WebsocketConsumer):
             modify_params = {k: v for k, v in params.items() if k != "orderid"}
 
             response = self.smart_api.modifyOrder(order_id, modify_params)
-            self.send(text_data=json.dumps({
+            self.send(json.dumps({
                 "status": "order_modified",
                 "orderid": order_id,
                 "data": response
@@ -234,7 +219,7 @@ class MarketConsumer(WebsocketConsumer):
         except Exception as e:
             error_msg = str(e)
             logger.error(f"Modify Order Failed: {error_msg}")
-            self.send(text_data=json.dumps({
+            self.send(json.dumps({
                 "error": error_msg,
                 "action": "modify_order"
             }))
@@ -248,7 +233,7 @@ class MarketConsumer(WebsocketConsumer):
                 raise ValueError("orderid is required for cancel")
 
             response = self.smart_api.cancelOrder(variety, order_id)
-            self.send(text_data=json.dumps({
+            self.send(json.dumps({
                 "status": "order_canceled",
                 "orderid": order_id,
                 "data": response
@@ -257,7 +242,7 @@ class MarketConsumer(WebsocketConsumer):
         except Exception as e:
             error_msg = str(e)
             logger.error(f"Cancel Order Failed: {error_msg}")
-            self.send(text_data=json.dumps({
+            self.send(json.dumps({
                 "error": error_msg,
                 "action": "cancel_order"
             }))
@@ -279,20 +264,20 @@ class MarketConsumer(WebsocketConsumer):
                     break
 
             if matching_order:
-                self.send(text_data=json.dumps({
+                self.send(json.dumps({
                     "status": "order_details",
                     "orderid": order_id,
                     "data": matching_order
                 }))
             else:
-                self.send(text_data=json.dumps({
+                self.send(json.dumps({
                     "error": f"Order {order_id} not found in recent orders",
                     "action": "get_order"
                 }))
         except Exception as e:
             error_msg = str(e)
             logger.error(f"Get Order Details Failed: {error_msg}")
-            self.send(text_data=json.dumps({
+            self.send(json.dumps({
                 "error": error_msg,
                 "action": "get_order"
             }))
@@ -306,22 +291,22 @@ class MarketConsumer(WebsocketConsumer):
             if login_data.get('status') == True:
                 self.auth_token = login_data["data"]["jwtToken"]
                 self.feed_token = self.smart_api.getfeedToken()
-                self.send(text_data=json.dumps({
+                self.send(json.dumps({
                     "status": "Re-login successful - session refreshed",
                     "auth_token_prefix": self.auth_token[:20] + "..."
                 }))
                 logger.info("Re-login SUCCESS")
             else:
                 error_msg = login_data.get('message', 'Re-login failed - check credentials/TOTP')
-                self.send(text_data=json.dumps({"error": error_msg}))
+                self.send(json.dumps({"error": error_msg}))
                 logger.error(error_msg)
 
         except Exception as e:
-            self.send(text_data=json.dumps({"error": f"Re-login exception: {str(e)}"}))
+            self.send(json.dumps({"error": f"Re-login exception: {str(e)}"}))
             logger.error(f"Re-login exception: {str(e)}")
 
     # ────────────────────────────────────────────────
-    # Historical + Indicators + Strategy (updated)
+    # Historical + Indicators + Strategy
     # ────────────────────────────────────────────────
 
     def handle_get_historical(self, params):
@@ -355,7 +340,7 @@ class MarketConsumer(WebsocketConsumer):
             if candle_data.get('status') == True and candle_data.get('data'):
                 candles = candle_data["data"]
                 if not candles:
-                    self.send(text_data=json.dumps({"error": "No candles returned from broker"}))
+                    self.send(json.dumps({"error": "No candles returned from broker"}))
                     return
 
                 timestamps = [c[0] for c in candles]
@@ -390,7 +375,8 @@ class MarketConsumer(WebsocketConsumer):
 
                 # Get current position from DB
                 open_pos = self.get_open_position_for_token(symbol_token)
-                current_side = open_pos.side if open_pos else "NONE"
+                # No .side field → use simple status string
+                current_side = "OPEN" if open_pos else "NONE"
 
                 adx_signal  = check_adx_strategy(response["adx"], current_side)
                 macd_signal = check_macd_strategy(response["macd"], current_side)
@@ -400,135 +386,168 @@ class MarketConsumer(WebsocketConsumer):
                 for sig in [s for s in [adx_signal, macd_signal] if s]:
                     self.handle_strategy_signal(symbol_token, sig, latest_close=response["latest_close"])
 
-                self.send(text_data=json.dumps(response))
+                self.send(json.dumps(response))
 
             else:
                 error_msg = candle_data.get('message', 'No historical data or failure')
-                self.send(text_data=json.dumps({
+                self.send(json.dumps({
                     "error": error_msg,
                     "broker_response": candle_data
                 }))
 
         except Exception as e:
-            self.send(text_data=json.dumps({
+            self.send(json.dumps({
                 "error": f"Historical fetch failed: {str(e)}",
                 "action": "get_historical"
             }))
-            logger.error(f"Historical fetch exception: {str(e)}")
+            logger.error(f"Historical fetch exception: {str(e)}", exc_info=True)
 
     # ────────────────────────────────────────────────
     # Database Position Helpers
     # ────────────────────────────────────────────────
 
     def get_open_position_for_token(self, symbol_token):
-        """Get the most recent open position for this token"""
         return Position.objects.filter(
             token=symbol_token,
             status="OPEN"
         ).order_by('-entry_datetime').first()
 
-    def open_position_db(self, symbol_token, side, entry_price, quantity=1, target=None, stoploss=None):
+    def open_position_db(self, symbol_token, side, entry_price, quantity=1):
         try:
             symbol_name = self.token_symbol_map.get(symbol_token, symbol_token)
-            exchange = "NSE"  # change later if needed
+            exchange = "NSE"
 
-            # Do NOT pass 'side' to the model
+            # Example: 1.5% target / 1% stoploss — adjust numbers or make configurable
+            risk_reward = 1.5
+            risk_percent = 0.01          # 1%
+            reward_percent = risk_percent * risk_reward
+
+            if side == "LONG":
+                target    = entry_price * (1 + reward_percent)
+                stoploss  = entry_price * (1 - risk_percent)
+            else:  # SHORT
+                target    = entry_price * (1 - reward_percent)
+                stoploss  = entry_price * (1 + risk_percent)
+
             position = Position.objects.create(
-                symbol=symbol_name,
-                exchange=exchange,
-                token=symbol_token,
-                entry_price=entry_price,
-                target=target,
-                stoploss=stoploss,
-                mtm=0.0,
-                status="OPEN"
+                symbol      = symbol_name,
+                exchange    = exchange,
+                token       = symbol_token,
+                entry_price = entry_price,
+                target      = round(target, 2),
+                stoploss    = round(stoploss, 2),
+                mtm         = 0.0,
+                status      = "OPEN"
             )
-            logger.info(f"DB Position OPENED: {side.upper()} {symbol_name} ({symbol_token}) @ {entry_price}")
+
+            logger.info(f"Opened {side} {symbol_name} @ {entry_price:.2f} | "
+                        f"Target={target:.2f} | SL={stoploss:.2f}")
+
+            # Send to frontend
+            self.send(json.dumps({
+                "status": "position_opened",
+                "token": symbol_token,
+                "symbol": symbol_name,
+                "side": side,
+                "entry_price": entry_price,
+                "target": round(target, 2),
+                "stoploss": round(stoploss, 2),
+                "quantity": quantity
+            }))
+
             return position
         except Exception as e:
-            logger.error(f"Failed to create position in DB: {e}")
+            logger.error(f"Open position failed: {e}", exc_info=True)
             return None
-
-
+    
     def close_position_db(self, symbol_token, exit_price, exit_reason="Strategy Exit"):
         try:
             position = self.get_open_position_for_token(symbol_token)
-
             if not position:
-                logger.warning(f"No open position found in DB for token {symbol_token}")
-                return
+                logger.warning(f"No open position for token {symbol_token}")
+                return None
 
-            # Very simple / approximate PNL (we don't know direction → we assume LONG)
-            # You can improve this later when you decide how to track direction
             if position.entry_price is not None:
-                pnl = (exit_price - position.entry_price) * 1   # qty=1, assumes LONG / positive move
+                # Simple approximation (assuming LONG). Later improve with direction logic.
+                pnl = (exit_price - position.entry_price) * 1
             else:
                 pnl = 0.0
 
-            position.exit_price = exit_price
-            position.exit_datetime = timezone.now()
-            position.mtm = round(pnl, 2)
-            position.status = "CLOSED"
+            position.exit_price     = exit_price
+            position.exit_datetime  = timezone.now()
+            position.mtm            = round(pnl, 2)
+            position.status         = "CLOSED"          # or "SQUARED_OFF"
             position.save()
 
-            logger.info(f"DB Position CLOSED: {position.symbol} @ {exit_price} | Approx PNL: {pnl} | Reason: {exit_reason}")
+            logger.info(
+                f"Position CLOSED | Token={symbol_token} | "
+                f"Exit price={exit_price:.2f} | "
+                f"Exit time={position.exit_datetime} | "
+                f"MTM={position.mtm:.2f} | Reason={exit_reason}"
+            )
+
+            # Inform frontend
+            symbol_name = self.token_symbol_map.get(symbol_token, symbol_token)
+            self.send(json.dumps({
+                "status": "position_closed",
+                "token": symbol_token,
+                "symbol": symbol_name,
+                "exit_price": round(exit_price, 2),
+                "exit_datetime": position.exit_datetime.isoformat(),
+                "pnl": position.mtm,
+                "reason": exit_reason
+            }))
+
             return position
 
         except Exception as e:
-            logger.error(f"Failed to close position in DB: {e}")
+            logger.error(f"Close position failed: {e}", exc_info=True)
             return None
-
+    
     def handle_strategy_signal(self, symbol_token, signal, latest_close=None):
-        if not signal:
-            symbol_name = self.token_symbol_map.get(symbol_token, symbol_token)
-            open_pos = self.get_open_position_for_token(symbol_token)
-            current_side = open_pos.side if open_pos else "NONE"
+        symbol_name = self.token_symbol_map.get(symbol_token, symbol_token)
+        open_pos = self.get_open_position_for_token(symbol_token)
 
-            self.send(text_data=json.dumps({
+        if not signal:
+            self.send(json.dumps({
                 "status": "no_signal",
                 "symboltoken": symbol_token,
                 "symbol": symbol_name,
-                "current_position": {"side": current_side}
+                "current_position": {
+                    "status": "OPEN" if open_pos else "NONE"
+                }
             }))
             return
 
         action = signal["action"]
-        # In real system → get from LTP feed or last candle
-        entry_or_exit_price = latest_close if latest_close is not None else 1062.65
-
-        symbol_name = self.token_symbol_map.get(symbol_token, symbol_token)
-        open_pos = self.get_open_position_for_token(symbol_token)
+        price = latest_close if latest_close is not None else 1062.65  # fallback
 
         if action in ("BUY", "SELL") and not open_pos:
             side = "LONG" if action == "BUY" else "SHORT"
-            position = self.open_position_db(symbol_token, side, entry_or_exit_price)   # side is only for logging
+            position = self.open_position_db(symbol_token, side, price)
 
-            # In the send message you can still include side:
-            self.send(text_data=json.dumps({
-                "status": "position_opened",
-                "symbol": symbol_name,
-                "token": symbol_token,
-                "side": side,                  # ← frontend still sees it
-                "entry_price": entry_or_exit_price,
-                "signal": signal
-            }))
-
-        elif action == "EXIT" and open_pos:
-            closed_pos = self.close_position_db(symbol_token, entry_or_exit_price, signal["reason"])
-
-            if closed_pos:
-                self.send(text_data=json.dumps({
-                    "status": "position_closed",
+            if position:
+                self.send(json.dumps({
+                    "status": "position_opened",
                     "symbol": symbol_name,
                     "token": symbol_token,
-                    "exit_price": entry_or_exit_price,
-                    "pnl": closed_pos.mtm,
+                    "side": side,  # frontend can still use it
+                    "entry_price": price,
                     "signal": signal
                 }))
 
-    # ────────────────────────────────────────────────
-    # Cleanup on disconnect
-    # ────────────────────────────────────────────────
+        elif action == "EXIT" and open_pos:
+            closed_pos = self.close_position_db(symbol_token, price, signal["reason"])
+
+            if closed_pos:
+                self.send(json.dumps({
+                    "status": "position_closed",
+                    "symbol": symbol_name,
+                    "token": symbol_token,
+                    "exit_price": price,
+                    "pnl": closed_pos.mtm,
+                    "signal": signal
+                }))
 
     def disconnect(self, close_code):
         try:
