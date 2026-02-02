@@ -81,10 +81,14 @@ def setup_connection(consumer):
             ltp_raw = message.get("last_traded_price")
             
             if not ltp_raw:
+                print(f"[LTP DEBUG] No LTP in message for token {token}")
                 return
 
             ltp = ltp_raw / 100
             symbol = consumer.token_symbol_map.get(token, "UNKNOWN")
+
+            # Print every incoming LTP (proof that live data is flowing)
+            print(f"[LTP RECEIVED] {symbol} ({token}) → LTP = {ltp:.2f}")
 
             # 1. Always send current LTP to frontend
             consumer.send(json.dumps({
@@ -95,6 +99,7 @@ def setup_connection(consumer):
 
             # 2. Try to update MTM and check target/stoploss for open positions
             try:
+                print(f"[POSITION CHECK] Looking for OPEN position with token {token}")
                 open_position = Position.objects.filter(
                     token=token,
                     status="OPEN"
@@ -104,14 +109,26 @@ def setup_connection(consumer):
                     entry = open_position.entry_price
                     qty = open_position.quantity
 
+                    print(f"[POSITION FOUND] ID={open_position.id} | {symbol} | Entry={entry:.2f} | Qty={qty} | Current MTM={open_position.mtm:.2f}")
+
+                    # Direction-aware MTM calculation
                     if ltp >= entry:
                         mtm = (ltp - entry) * qty
+                        dir_guess = "LONG"
                     else:
                         mtm = (entry - ltp) * qty
+                        dir_guess = "SHORT"
 
-                    if abs(mtm - open_position.mtm) > 0.05:
+                    print(f"[MTM CALC] LTP={ltp:.2f} | Direction guess={dir_guess} | New MTM={mtm:.2f} | Old MTM={open_position.mtm:.2f}")
+
+                    # Check if change is significant
+                    change = abs(mtm - open_position.mtm)
+                    print(f"[MTM CHANGE] Difference = {change:.2f}")
+
+                    if change > 0.01:  # lowered threshold for easier testing
                         open_position.mtm = round(mtm, 2)
                         open_position.save(update_fields=['mtm'])
+                        print(f"[MTM SAVED] New value saved to DB = {open_position.mtm:.2f}")
 
                         # Send MTM update to frontend
                         consumer.send(json.dumps({
@@ -121,21 +138,24 @@ def setup_connection(consumer):
                             "ltp": round(ltp, 2),
                             "mtm": open_position.mtm,
                             "entry_price": round(entry, 2),
-                            "direction_guess": "LONG" if ltp >= entry else "SHORT"
+                            "direction_guess": dir_guess
                         }))
-
-                        logger.debug(f"MTM updated | {symbol} ({token}) | LTP={ltp:.2f} | MTM={open_position.mtm:.2f}")
+                    else:
+                        print("[MTM SKIPPED] Change too small – not saving")
 
                     # 3. Check if target or stoploss hit → auto exit
                     exit_reason = None
                     should_exit = False
 
+                    print(f"[EXIT CHECK] Target={open_position.target}, Stoploss={open_position.stoploss}")
+
                     # Target hit?
                     if open_position.target is not None:
                         if (ltp >= open_position.target * 0.99 and ltp >= entry) or \
-                        (ltp <= open_position.target * 1.01 and ltp <= entry):   # 1% tolerance
-                            exit_reason = "Target reached (test)"
+                        (ltp <= open_position.target * 1.01 and ltp <= entry):
+                            exit_reason = "Target reached"
                             should_exit = True
+                            print(f"[EXIT TRIGGER] Target hit condition met → LTP={ltp:.2f}")
 
                     # Stoploss hit?
                     if open_position.stoploss is not None:
@@ -143,8 +163,10 @@ def setup_connection(consumer):
                         (ltp >= open_position.stoploss and ltp >= entry):
                             exit_reason = "Stoploss hit"
                             should_exit = True
+                            print(f"[EXIT TRIGGER] Stoploss hit condition met → LTP={ltp:.2f}")
 
                     if should_exit:
+                        print(f"[AUTO EXIT START] Reason={exit_reason} | Price={ltp:.2f}")
                         consumer.close_position_db(
                             symbol_token=token,
                             exit_price=ltp,
@@ -152,7 +174,7 @@ def setup_connection(consumer):
                         )
                         logger.info(f"AUTO EXIT | {exit_reason} | {symbol} ({token}) | Price={ltp:.2f}")
 
-                        # Notify frontend about auto exit
+                        # Notify frontend
                         consumer.send(json.dumps({
                             "status": "auto_exit",
                             "token": token,
@@ -161,8 +183,15 @@ def setup_connection(consumer):
                             "exit_reason": exit_reason,
                             "mtm": open_position.mtm
                         }))
+                        print(f"[AUTO EXIT FINISH] Position closed")
+                    else:
+                        print("[EXIT CHECK] No exit condition met")
+
+                else:
+                    print(f"[POSITION NOT FOUND] No OPEN position for token {token}")
 
             except Exception as e:
+                print(f"[ERROR in on_data] Token={token} | Error: {e}")
                 logger.error(f"Error in on_data processing for token {token}: {e}", exc_info=True)
 
         def on_error(wsapp, error):

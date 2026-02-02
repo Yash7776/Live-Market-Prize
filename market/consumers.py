@@ -536,10 +536,10 @@ class MarketConsumer(WebsocketConsumer):
             return None
     
     def handle_strategy_signal(self, symbol_token, signal, latest_close=None):
-        symbol_name = self.token_symbol_map.get(symbol_token, symbol_token)
-        open_pos = self.get_open_position_for_token(symbol_token)
-
         if not signal:
+            symbol_name = self.token_symbol_map.get(symbol_token, symbol_token)
+            open_pos = self.get_open_position_for_token(symbol_token)
+
             self.send(json.dumps({
                 "status": "no_signal",
                 "symboltoken": symbol_token,
@@ -551,14 +551,31 @@ class MarketConsumer(WebsocketConsumer):
             return
 
         action = signal["action"]
+        reason = signal.get("reason", "No reason")
         price = latest_close if latest_close is not None else 1062.65  # fallback
 
-        if action in ("BUY", "SELL") and not open_pos:
+        symbol_name = self.token_symbol_map.get(symbol_token, symbol_token)
+        open_pos = self.get_open_position_for_token(symbol_token)
+
+        # ── ENTRY logic ──
+        if action in ("BUY", "SELL"):
+            if open_pos:
+                # Already have open position → don't open duplicate
+                print(f"[SIGNAL IGNORE] Already {open_pos.status} position for {symbol_token} — ignoring new {action}")
+                self.send(json.dumps({
+                    "status": "signal_ignored",
+                    "reason": "Position already open",
+                    "symbol": symbol_name,
+                    "token": symbol_token,
+                    "current_side": "OPEN"
+                }))
+                return
+
             side = "LONG" if action == "BUY" else "SHORT"
-            
-            # You can make this configurable later (from frontend or strategy)
-            lots = 1           # example
-            quantity = 50      # example - for equity, or lots * lot_size for futures/options
+
+            # TODO: Make configurable later (from frontend, risk %, etc.)
+            lots = 1
+            quantity = 50  # or lots * instrument_lot_size if you fetch from master
 
             position = self.open_position_db(
                 symbol_token=symbol_token,
@@ -574,25 +591,38 @@ class MarketConsumer(WebsocketConsumer):
                     "symbol": symbol_name,
                     "token": symbol_token,
                     "side": side,
-                    "entry_price": price,
+                    "entry_price": round(price, 2),
+                    "target": position.target,
+                    "stoploss": position.stoploss,
                     "lots": lots,
                     "quantity": quantity,
                     "signal": signal
                 }))
+                print(f"[ENTRY EXECUTED] {side} {symbol_name} @ {price:.2f}, Qty={quantity}")
 
+        # ── EXIT logic ──
         elif action == "EXIT" and open_pos:
-            closed_pos = self.close_position_db(symbol_token, price, signal["reason"])
+            closed_pos = self.close_position_db(
+                symbol_token=symbol_token,
+                exit_price=price,
+                exit_reason=reason
+            )
 
             if closed_pos:
                 self.send(json.dumps({
                     "status": "position_closed",
                     "symbol": symbol_name,
                     "token": symbol_token,
-                    "exit_price": price,
+                    "exit_price": round(price, 2),
                     "pnl": closed_pos.mtm,
+                    "exit_datetime": closed_pos.exit_datetime.isoformat() if closed_pos.exit_datetime else None,
                     "signal": signal
                 }))
+                print(f"[EXIT EXECUTED] {symbol_name} closed @ {price:.2f}, PNL={closed_pos.mtm:.2f}")
 
+        else:
+            print(f"[SIGNAL UNKNOWN] Action={action} ignored for {symbol_token}")
+    
     def disconnect(self, close_code):
         try:
             if self.sws:
