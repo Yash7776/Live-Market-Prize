@@ -376,6 +376,8 @@ class MarketConsumer(WebsocketConsumer):
                 # Get current position from DB
                 open_pos = self.get_open_position_for_token(symbol_token)
                 # No .side field → use simple status string
+                if open_pos:
+                    self.close_position_db(symbol_token, response["latest_close"] + 5, "Test force exit")
                 current_side = "OPEN" if open_pos else "NONE"
 
                 adx_signal  = check_adx_strategy(response["adx"], current_side)
@@ -412,14 +414,14 @@ class MarketConsumer(WebsocketConsumer):
             status="OPEN"
         ).order_by('-entry_datetime').first()
 
-    def open_position_db(self, symbol_token, side, entry_price, quantity=1):
+    def open_position_db(self, symbol_token, side, entry_price, quantity=1, lots=1):
         try:
             symbol_name = self.token_symbol_map.get(symbol_token, symbol_token)
             exchange = "NSE"
 
-            # Example: 1.5% target / 1% stoploss — adjust numbers or make configurable
+            # Calculate target & stoploss (example logic)
             risk_reward = 1.5
-            risk_percent = 0.01          # 1%
+            risk_percent = 0.01
             reward_percent = risk_percent * risk_reward
 
             if side == "LONG":
@@ -437,10 +439,15 @@ class MarketConsumer(WebsocketConsumer):
                 target      = round(target, 2),
                 stoploss    = round(stoploss, 2),
                 mtm         = 0.0,
-                status      = "OPEN"
+                status      = "OPEN",
+                
+                # NEW: save lots & quantity
+                lots        = lots,
+                quantity    = quantity,
             )
 
             logger.info(f"Opened {side} {symbol_name} @ {entry_price:.2f} | "
+                        f"Lots={lots} | Qty={quantity} | "
                         f"Target={target:.2f} | SL={stoploss:.2f}")
 
             # Send to frontend
@@ -452,10 +459,12 @@ class MarketConsumer(WebsocketConsumer):
                 "entry_price": entry_price,
                 "target": round(target, 2),
                 "stoploss": round(stoploss, 2),
-                "quantity": quantity
+                "lots": lots,
+                "quantity": quantity,
             }))
 
             return position
+
         except Exception as e:
             logger.error(f"Open position failed: {e}", exc_info=True)
             return None
@@ -468,25 +477,29 @@ class MarketConsumer(WebsocketConsumer):
                 return None
 
             if position.entry_price is not None:
-                # Simple approximation (assuming LONG). Later improve with direction logic.
-                pnl = (exit_price - position.entry_price) * 1
+                # Use quantity for accurate PNL
+                if position.entry_price < exit_price:
+                    # Likely LONG (profit when price rises)
+                    pnl = (exit_price - position.entry_price) * position.quantity
+                else:
+                    # Likely SHORT
+                    pnl = (position.entry_price - exit_price) * position.quantity
             else:
                 pnl = 0.0
 
             position.exit_price     = exit_price
             position.exit_datetime  = timezone.now()
             position.mtm            = round(pnl, 2)
-            position.status         = "CLOSED"          # or "SQUARED_OFF"
+            position.status         = "CLOSED"
             position.save()
 
             logger.info(
                 f"Position CLOSED | Token={symbol_token} | "
                 f"Exit price={exit_price:.2f} | "
                 f"Exit time={position.exit_datetime} | "
-                f"MTM={position.mtm:.2f} | Reason={exit_reason}"
+                f"Qty={position.quantity} | MTM={position.mtm:.2f} | Reason={exit_reason}"
             )
 
-            # Inform frontend
             symbol_name = self.token_symbol_map.get(symbol_token, symbol_token)
             self.send(json.dumps({
                 "status": "position_closed",
@@ -495,6 +508,7 @@ class MarketConsumer(WebsocketConsumer):
                 "exit_price": round(exit_price, 2),
                 "exit_datetime": position.exit_datetime.isoformat(),
                 "pnl": position.mtm,
+                "quantity": position.quantity,
                 "reason": exit_reason
             }))
 
@@ -524,15 +538,28 @@ class MarketConsumer(WebsocketConsumer):
 
         if action in ("BUY", "SELL") and not open_pos:
             side = "LONG" if action == "BUY" else "SHORT"
-            position = self.open_position_db(symbol_token, side, price)
+            
+            # You can make this configurable later (from frontend or strategy)
+            lots = 1           # example
+            quantity = 50      # example - for equity, or lots * lot_size for futures/options
+
+            position = self.open_position_db(
+                symbol_token=symbol_token,
+                side=side,
+                entry_price=price,
+                lots=lots,
+                quantity=quantity
+            )
 
             if position:
                 self.send(json.dumps({
                     "status": "position_opened",
                     "symbol": symbol_name,
                     "token": symbol_token,
-                    "side": side,  # frontend can still use it
+                    "side": side,
                     "entry_price": price,
+                    "lots": lots,
+                    "quantity": quantity,
                     "signal": signal
                 }))
 

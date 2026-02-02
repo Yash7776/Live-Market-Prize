@@ -95,17 +95,13 @@ def setup_connection(consumer):
 
                 if open_position and open_position.entry_price is not None:
                     entry = open_position.entry_price
-                    
-                    # Direction-aware MTM approximation (without having 'side' field)
-                    if ltp >= entry:
-                        # Looks like LONG position (profit when price rises)
-                        mtm = (ltp - entry) * 1   # quantity = 1 for now
-                    else:
-                        # Looks like SHORT position (profit when price falls)
-                        mtm = (entry - ltp) * 1
+                    qty = open_position.quantity
 
-                    # Update MTM only if change is meaningful (avoid database spam)
-                    print(mtm)
+                    if ltp >= entry:
+                        mtm = (ltp - entry) * qty
+                    else:
+                        mtm = (entry - ltp) * qty
+
                     if abs(mtm - open_position.mtm) > 0.05:
                         open_position.mtm = round(mtm, 2)
                         open_position.save(update_fields=['mtm'])
@@ -129,9 +125,9 @@ def setup_connection(consumer):
 
                     # Target hit?
                     if open_position.target is not None:
-                        if (ltp >= open_position.target and ltp >= entry) or \
-                        (ltp <= open_position.target and ltp <= entry):
-                            exit_reason = "Target reached"
+                        if (ltp >= open_position.target * 0.99 and ltp >= entry) or \
+                        (ltp <= open_position.target * 1.01 and ltp <= entry):   # 1% tolerance
+                            exit_reason = "Target reached (test)"
                             should_exit = True
 
                     # Stoploss hit?
