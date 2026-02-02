@@ -270,3 +270,122 @@
 [I 260130 16:36:51 consumers:498] Position opened: LONG 99926000 @ 25348.05 (qty: 1)
 [I 260130 16:36:51 consumers:457] Simulated BUY entry for 99926000 @ 25348.05
 [I 260130 16:36:51 consumers:439] Signal generated for 99926000 (99926000): BUY - MACD line 30.6986 > 0 (bullish) | Current position: LONG
+[I 260130 16:47:31 connection:67] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260130 16:47:40 consumers:336] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3326', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[I 260130 16:47:41 consumers:343] Historical data fetched - 50 candles
+[I 260130 16:47:41 strategies:48] ADX Signal: {'action': 'SELL', 'reason': '-DI 29.55 > 20 (strong downtrend)', 'confidence': 'high'}
+[I 260130 16:47:41 strategies:78] MACD Signal: {'action': 'BUY', 'reason': 'MACD line 0.8000 > 0 (bullish)'}
+[I 260130 16:47:41 consumers:397] Strategy check for 3326: ADX={'action': 'SELL', 'reason': '-DI 29.55 > 20 (strong downtrend)', 'confidence': 'high'}, MACD={'action': 'BUY', 'reason': 'MACD line 0.8000 > 0 (bullish)'}, CurrentSide=NONE
+[I 260130 16:47:41 consumers:439] Signal generated for 3326 (3326): SELL - -DI 29.55 > 20 (strong downtrend) | Current position: NONE
+[I 260130 16:47:41 consumers:498] Position opened: SHORT 3326 @ 940.0 (qty: 1)
+[I 260130 16:47:41 consumers:462] Simulated SELL entry for 3326 @ 940.0
+[I 260130 16:47:41 consumers:439] Signal generated for 3326 (3326): BUY - MACD line 0.8000 > 0 (bullish) | Current position: SHORT
+[I 260130 16:49:21 connection:67] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260130 16:49:42 consumers:336] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3326', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[I 260130 16:49:43 consumers:343] Historical data fetched - 50 candles
+[I 260130 16:49:43 strategies:48] ADX Signal: {'action': 'SELL', 'reason': '-DI 29.55 > 20 (strong downtrend)', 'confidence': 'high'}
+[I 260130 16:49:43 strategies:78] MACD Signal: {'action': 'BUY', 'reason': 'MACD line 0.8000 > 0 (bullish)'}
+[I 260130 16:49:43 consumers:397] Strategy check for 3326: ADX={'action': 'SELL', 'reason': '-DI 29.55 > 20 (strong downtrend)', 'confidence': 'high'}, MACD={'action': 'BUY', 'reason': 'MACD line 0.8000 > 0 (bullish)'}, CurrentSide=NONE
+[I 260130 16:49:43 consumers:439] Signal generated for 3326 (3326): SELL - -DI 29.55 > 20 (strong downtrend) | Current position: NONE
+[I 260130 16:49:43 consumers:498] Position opened: SHORT 3326 @ 940.0 (qty: 1)
+[I 260130 16:49:43 consumers:462] Simulated SELL entry for 3326 @ 940.0
+[I 260130 16:49:43 consumers:439] Signal generated for 3326 (3326): BUY - MACD line 0.8000 > 0 (bullish) | Current position: SHORT
+[I 260130 16:53:34 connection:67] SmartAPI WebSocket Opened - Ready for subscriptions
+[W 260130 17:12:08 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260130 17:12:18 connection:67] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260130 17:12:19 smartConnect:124] in pool
+[I 260130 17:12:28 connection:67] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260130 17:12:57 consumers:336] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3326', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[I 260130 17:12:58 consumers:343] Historical data fetched - 50 candles
+[I 260130 17:12:58 strategies:48] ADX Signal: {'action': 'SELL', 'reason': '-DI 29.55 > 20 (strong downtrend)', 'confidence': 'high'}
+[I 260130 17:12:58 strategies:78] MACD Signal: {'action': 'BUY', 'reason': 'MACD line 0.8000 > 0 (bullish)'}
+[I 260130 17:12:58 consumers:397] Strategy check for 3326: ADX={'action': 'SELL', 'reason': '-DI 29.55 > 20 (strong downtrend)', 'confidence': 'high'}, MACD={'action': 'BUY', 'reason': 'MACD line 0.8000 > 0 (bullish)'}, CurrentSide=NONE
+[I 260130 17:12:58 consumers:439] Signal generated for 3326 (3326): SELL - -DI 29.55 > 20 (strong downtrend) | Current position: NONE
+[I 260130 17:12:58 consumers:498] Position opened: SHORT 3326 @ 940.0 (qty: 1)
+[I 260130 17:12:58 consumers:462] Simulated SELL entry for 3326 @ 940.0
+[I 260130 17:12:58 consumers:439] Signal generated for 3326 (3326): BUY - MACD line 0.8000 > 0 (bullish) | Current position: SHORT
+[I 260130 17:15:03 connection:67] SmartAPI WebSocket Opened - Ready for subscriptions
+[E 260130 17:15:19 smartConnect:246] Error occurred while making a POST request to https://apiconnect.angelone.in/rest/secure/angelbroking/order/v1/placeOrder. Error: Your demat account is dormant. URL: https://apiconnect.angelone.in/rest/secure/angelbroking/order/v1/placeOrder, Headers: {'Content-type': 'application/json', 'X-ClientLocalIP': '127.0.0.1', 'X-ClientPublicIP': '106.193.147.98', 'X-MACAddress': '30:9c:23:7c:86:e1', 'Accept': 'application/json', 'X-PrivateKey': 'iARx2hbi', 'X-UserType': 'USER', 'X-SourceID': 'WEB'}, Request: {'variety': 'NORMAL', 'tradingsymbol': 'SBIN-EQ', 'symboltoken': '3045', 'transactiontype': 'BUY', 'exchange': 'NSE', 'ordertype': 'LIMIT', 'producttype': 'INTRADAY', 'duration': 'DAY', 'price': '100', 'quantity': '1', 'squareoff': '0', 'stoploss': '0'}, Response: {'status': False, 'message': 'Your demat account is dormant', 'errorcode': 'AB1007', 'data': {'script': 'SBIN-EQ', 'orderid': None, 'uniqueorderid': 'c41ab0b1-fb52-44f8-a81a-6b669c7f1e01'}}
+[E 260130 17:15:19 smartConnect:339] API request failed: {'status': False, 'message': 'Your demat account is dormant', 'errorcode': 'AB1007', 'data': {'script': 'SBIN-EQ', 'orderid': None, 'uniqueorderid': 'c41ab0b1-fb52-44f8-a81a-6b669c7f1e01'}}
+[I 260130 17:15:19 consumers:161] Raw broker response from placeOrder: None
+[E 260130 17:15:19 consumers:169] placeOrder returned None - possible session invalid, network issue, or broker restriction
+[I 260130 17:41:08 connection:67] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260130 17:41:23 consumers:336] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3326', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[I 260130 17:41:24 consumers:343] Historical data fetched - 50 candles
+[I 260130 17:41:24 strategies:48] ADX Signal: {'action': 'SELL', 'reason': '-DI 29.55 > 20 (strong downtrend)', 'confidence': 'high'}
+[I 260130 17:41:24 strategies:78] MACD Signal: {'action': 'BUY', 'reason': 'MACD line 0.8000 > 0 (bullish)'}
+[I 260130 17:41:24 consumers:397] Strategy check for 3326: ADX={'action': 'SELL', 'reason': '-DI 29.55 > 20 (strong downtrend)', 'confidence': 'high'}, MACD={'action': 'BUY', 'reason': 'MACD line 0.8000 > 0 (bullish)'}, CurrentSide=NONE
+[I 260130 17:41:24 consumers:439] Signal generated for 3326 (3326): SELL - -DI 29.55 > 20 (strong downtrend) | Current position: NONE
+[I 260130 17:41:24 consumers:498] Position opened: SHORT 3326 @ 940.0 (qty: 1)
+[I 260130 17:41:24 consumers:462] Simulated SELL entry for 3326 @ 940.0
+[I 260130 17:41:24 consumers:439] Signal generated for 3326 (3326): BUY - MACD line 0.8000 > 0 (bullish) | Current position: SHORT
+[I 260130 17:42:16 consumers:336] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3326', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[I 260130 17:42:16 consumers:343] Historical data fetched - 50 candles
+[I 260130 17:42:16 strategies:48] ADX Signal: None
+[I 260130 17:42:16 strategies:78] MACD Signal: {'action': 'EXIT', 'reason': 'MACD line crossed above 0 (bullish crossover)'}
+[I 260130 17:42:16 consumers:397] Strategy check for 3326: ADX=None, MACD={'action': 'EXIT', 'reason': 'MACD line crossed above 0 (bullish crossover)'}, CurrentSide=SHORT
+[I 260130 17:42:16 consumers:439] Signal generated for 3326 (3326): EXIT - MACD line crossed above 0 (bullish crossover) | Current position: SHORT
+[I 260130 17:42:16 consumers:521] Position closed: 3326 SHORT @ 940.0 | PNL: 0.0
+[I 260130 17:42:16 consumers:467] Simulated EXIT for 3326 @ 940.0 | PNL updated
+[W 260130 17:49:31 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260130 17:49:32 smartConnect:124] in pool
+[I 260130 17:49:40 connection:67] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260130 17:49:41 connection:67] SmartAPI WebSocket Opened - Ready for subscriptions
+[W 260130 17:52:01 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260130 17:52:01 smartConnect:124] in pool
+[I 260130 17:52:10 connection:67] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260130 17:52:11 connection:67] SmartAPI WebSocket Opened - Ready for subscriptions
+[W 260130 17:53:51 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260130 17:53:51 smartConnect:124] in pool
+[I 260130 17:53:58 connection:67] SmartAPI WebSocket Opened - Ready for subscriptions
+[E 260130 17:54:01 connection:87] WebSocket Error: Connection closed
+[W 260130 17:54:01 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[E 260130 17:54:01 connection:87] WebSocket Error: Connection closed
+[W 260130 17:54:01 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[I 260130 17:54:11 consumers:336] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3045', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[I 260130 17:54:11 consumers:343] Historical data fetched - 50 candles
+[I 260130 17:54:11 strategies:48] ADX Signal: {'action': 'BUY', 'reason': '+DI 25.24 > 20 (strong uptrend)', 'confidence': 'high'}
+[I 260130 17:54:11 strategies:78] MACD Signal: {'action': 'BUY', 'reason': 'MACD line 2.8855 > 0 (bullish)'}
+[I 260130 17:54:11 consumers:397] Strategy check for 3045: ADX={'action': 'BUY', 'reason': '+DI 25.24 > 20 (strong uptrend)', 'confidence': 'high'}, MACD={'action': 'BUY', 'reason': 'MACD line 2.8855 > 0 (bullish)'}, CurrentSide=NONE
+[I 260130 17:54:11 consumers:439] Signal generated for 3045 (3045): BUY - +DI 25.24 > 20 (strong uptrend) | Current position: NONE
+[I 260130 17:54:11 consumers:498] Position opened: LONG 3045 @ 1062.65 (qty: 1)
+[I 260130 17:54:11 consumers:457] Simulated BUY entry for 3045 @ 1062.65
+[I 260130 17:54:11 consumers:439] Signal generated for 3045 (3045): BUY - MACD line 2.8855 > 0 (bullish) | Current position: LONG
+[I 260130 18:01:34 connection:67] SmartAPI WebSocket Opened - Ready for subscriptions
+[W 260130 18:04:44 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260130 18:04:44 smartConnect:124] in pool
+[I 260130 18:04:56 connection:67] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260130 18:05:04 consumers:336] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3045', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[I 260130 18:05:05 consumers:343] Historical data fetched - 50 candles
+[I 260130 18:05:05 strategies:48] ADX Signal: {'action': 'BUY', 'reason': '+DI 25.24 > 20 (strong uptrend)', 'confidence': 'high'}
+[I 260130 18:05:05 strategies:78] MACD Signal: {'action': 'BUY', 'reason': 'MACD line 2.8855 > 0 (bullish)'}
+[I 260130 18:05:05 consumers:397] Strategy check for 3045: ADX={'action': 'BUY', 'reason': '+DI 25.24 > 20 (strong uptrend)', 'confidence': 'high'}, MACD={'action': 'BUY', 'reason': 'MACD line 2.8855 > 0 (bullish)'}, CurrentSide=NONE
+[I 260130 18:05:05 consumers:439] Signal generated for 3045 (3045): BUY - +DI 25.24 > 20 (strong uptrend) | Current position: NONE
+[I 260130 18:05:05 consumers:498] Position opened: LONG 3045 @ 1062.65 (qty: 1)
+[I 260130 18:05:05 consumers:457] Simulated BUY entry for 3045 @ 1062.65
+[I 260130 18:05:05 consumers:439] Signal generated for 3045 (3045): BUY - MACD line 2.8855 > 0 (bullish) | Current position: LONG
+[I 260130 18:05:51 connection:67] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260130 18:05:56 connection:50] Instrument list fetched - 231131 entries
+[I 260130 18:05:56 connection:67] SmartAPI WebSocket Opened - Ready for subscriptions
+[W 260130 18:05:59 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260130 18:05:59 smartConnect:124] in pool
+[I 260130 18:06:07 connection:67] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260130 18:06:09 connection:50] Instrument list fetched - 231131 entries
+[I 260130 18:06:10 connection:67] SmartAPI WebSocket Opened - Ready for subscriptions
+[W 260130 18:06:10 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[E 260130 18:06:20 connection:87] WebSocket Error: Connection closed
+[W 260130 18:06:20 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[E 260130 18:06:20 connection:87] WebSocket Error: Connection closed
+[W 260130 18:06:20 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[E 260130 18:06:20 connection:87] WebSocket Error: Connection closed
+[W 260130 18:06:20 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[I 260130 18:07:16 connection:67] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260130 18:07:24 consumers:336] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3326', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[I 260130 18:07:24 consumers:343] Historical data fetched - 50 candles
+[I 260130 18:07:24 strategies:48] ADX Signal: {'action': 'SELL', 'reason': '-DI 29.55 > 20 (strong downtrend)', 'confidence': 'high'}
+[I 260130 18:07:24 strategies:78] MACD Signal: {'action': 'BUY', 'reason': 'MACD line 0.8000 > 0 (bullish)'}
+[I 260130 18:07:24 consumers:397] Strategy check for 3326: ADX={'action': 'SELL', 'reason': '-DI 29.55 > 20 (strong downtrend)', 'confidence': 'high'}, MACD={'action': 'BUY', 'reason': 'MACD line 0.8000 > 0 (bullish)'}, CurrentSide=NONE
+[I 260130 18:07:24 consumers:439] Signal generated for 3326 (3326): SELL - -DI 29.55 > 20 (strong downtrend) | Current position: NONE
+[I 260130 18:07:24 consumers:498] Position opened: SHORT 3326 @ 940.0 (qty: 1)
+[I 260130 18:07:24 consumers:462] Simulated SELL entry for 3326 @ 940.0
+[I 260130 18:07:24 consumers:439] Signal generated for 3326 (3326): BUY - MACD line 0.8000 > 0 (bullish) | Current position: SHORT

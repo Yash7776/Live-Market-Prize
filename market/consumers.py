@@ -7,23 +7,25 @@ from dotenv import load_dotenv
 import pandas as pd
 import numpy as np
 from channels.generic.websocket import WebsocketConsumer
+from django.utils import timezone
 from logzero import logger
 from SmartApi import SmartConnect
 from SmartApi.smartWebSocketV2 import SmartWebSocketV2
 from .connection import CLIENT_CODE, PIN, TOTP_SECRET, setup_connection
 from .utils.indicators import calculate_rsi, calculate_macd, calculate_adx
 from .utils.strategies import check_adx_strategy, check_macd_strategy
+from .models import Position   # ← Import your Position model
+
 # Official exchangeType mapping from SmartAPI SDK source
 EXCHANGE_MAP = {
-    "NSE": 1,    # NSE_CM - Cash / Equity + Indices
-    "NFO": 2,    # NSE_FO - Futures & Options
-    "BSE": 3,    # BSE_CM - Cash / Equity
-    "BFO": 4,    # BSE_FO - Futures & Options
-    "MCX": 5,    # MCX_FO - Commodity Futures (also used for energy)
-    "NCO": 5,    # NCO (energy/commodity segment) - same type as MCX
-    "NCDEX": 7,  # NCX_FO - NCDEX Futures
-    "CDS": 13,   # CDE_FO - Currency Derivatives
-    # Add more only if needed and confirmed
+    "NSE": 1,
+    "NFO": 2,
+    "BSE": 3,
+    "BFO": 4,
+    "MCX": 5,
+    "NCO": 5,
+    "NCDEX": 7,
+    "CDS": 13,
 }
 
 
@@ -31,8 +33,8 @@ class MarketConsumer(WebsocketConsumer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.positions = {}  # Initialize position tracker here
-    
+        # No more in-memory positions dict
+
     def connect(self):
         self.accept()
         self.send(json.dumps({"status": "WebSocket Connected - Starting login..."}))
@@ -50,7 +52,7 @@ class MarketConsumer(WebsocketConsumer):
 
     def start_smartapi(self):
         threading.Thread(target=setup_connection, args=(self,), daemon=True).start()
-    
+
     def receive(self, text_data):
         try:
             data = json.loads(text_data)
@@ -81,7 +83,7 @@ class MarketConsumer(WebsocketConsumer):
             elif action == "get_order":
                 params = data.get("params", {})
                 self.handle_get_order_details(params)
-                
+
             elif action == "relogin":
                 self.handle_relogin()
 
@@ -96,6 +98,10 @@ class MarketConsumer(WebsocketConsumer):
             self.send(text_data=json.dumps({
                 "error": str(e)
             }))
+
+    # ────────────────────────────────────────────────
+    # Subscribe / Unsubscribe (unchanged)
+    # ────────────────────────────────────────────────
 
     def handle_subscribe(self, tradingsymbols, exchange):
         if not self.instrument_list:
@@ -143,7 +149,7 @@ class MarketConsumer(WebsocketConsumer):
 
         if tokens:
             token_list = [{"exchangeType": exchange_type, "tokens": tokens}]
-            self.sws.unsubscribe("abc123", 1, token_list)  # mode=1 for LTP
+            self.sws.unsubscribe("abc123", 1, token_list)
 
             self.subscribed_tokens[exchange_type].difference_update(tokens)
             if not self.subscribed_tokens[exchange_type]:
@@ -154,6 +160,10 @@ class MarketConsumer(WebsocketConsumer):
                     del self.token_symbol_map[token]
 
             self.send(text_data=json.dumps({"status": "unsubscribed", "tradingsymbols": tradingsymbols}))
+
+    # ────────────────────────────────────────────────
+    # Order handling methods (unchanged)
+    # ────────────────────────────────────────────────
 
     def handle_place_order(self, params):
         try:
@@ -169,7 +179,6 @@ class MarketConsumer(WebsocketConsumer):
                 logger.error(error_msg)
                 return
 
-            # Now safely check if it's a dict
             if isinstance(order_response, dict):
                 if order_response.get('status') is True:
                     order_id = order_response.get('data', {}).get('orderid')
@@ -213,7 +222,6 @@ class MarketConsumer(WebsocketConsumer):
             if not order_id:
                 raise ValueError("orderid is required for modify")
 
-            # Remove orderid from params before passing to modifyOrder
             modify_params = {k: v for k, v in params.items() if k != "orderid"}
 
             response = self.smart_api.modifyOrder(order_id, modify_params)
@@ -234,7 +242,7 @@ class MarketConsumer(WebsocketConsumer):
     def handle_cancel_order(self, params):
         try:
             order_id = params.get("orderid")
-            variety = params.get("variety", "NORMAL")  # default to NORMAL
+            variety = params.get("variety", "NORMAL")
 
             if not order_id:
                 raise ValueError("orderid is required for cancel")
@@ -260,7 +268,6 @@ class MarketConsumer(WebsocketConsumer):
             if not order_id:
                 raise ValueError("orderid is required for details")
 
-            # Get full order book and filter for the orderid
             order_book = self.smart_api.orderBook()
             if not order_book or 'data' not in order_book:
                 raise ValueError("No order book data")
@@ -289,6 +296,7 @@ class MarketConsumer(WebsocketConsumer):
                 "error": error_msg,
                 "action": "get_order"
             }))
+
     def handle_relogin(self):
         try:
             totp_code = pyotp.TOTP(TOTP_SECRET).now()
@@ -312,19 +320,21 @@ class MarketConsumer(WebsocketConsumer):
             self.send(text_data=json.dumps({"error": f"Re-login exception: {str(e)}"}))
             logger.error(f"Re-login exception: {str(e)}")
 
+    # ────────────────────────────────────────────────
+    # Historical + Indicators + Strategy (updated)
+    # ────────────────────────────────────────────────
+
     def handle_get_historical(self, params):
         try:
-            # Required params from frontend
             symbol_token = params.get("symboltoken")
             exchange = params.get("exchange", "NSE")
             interval = params.get("interval", "FIFTEEN_MINUTE")
-            from_date = params.get("from_date")   # e.g. "2026-01-01 09:00"
-            to_date   = params.get("to_date")     # e.g. "2026-01-28 15:30"
+            from_date = params.get("from_date")
+            to_date   = params.get("to_date")
 
             if not all([symbol_token, from_date, to_date]):
                 raise ValueError("symboltoken, from_date, to_date are required")
 
-            # Correct format: single dictionary for getCandleData
             historic_params = {
                 "exchange": exchange,
                 "symboltoken": symbol_token,
@@ -338,7 +348,7 @@ class MarketConsumer(WebsocketConsumer):
             candle_data = self.smart_api.getCandleData(historic_params)
 
             if candle_data is None:
-                raise ValueError("getCandleData returned None - check session, params, or broker response")
+                raise ValueError("getCandleData returned None")
 
             logger.info(f"Historical data fetched - {len(candle_data.get('data', []))} candles")
 
@@ -348,7 +358,6 @@ class MarketConsumer(WebsocketConsumer):
                     self.send(text_data=json.dumps({"error": "No candles returned from broker"}))
                     return
 
-                # Extract columns
                 timestamps = [c[0] for c in candles]
                 opens     = [c[1] for c in candles]
                 highs     = [c[2] for c in candles]
@@ -356,12 +365,10 @@ class MarketConsumer(WebsocketConsumer):
                 closes    = [c[4] for c in candles]
                 volumes   = [c[5] for c in candles]
 
-                # Calculate indicators
                 rsi = calculate_rsi(closes)
                 macd_line, macd_signal, macd_hist = calculate_macd(closes)
                 adx, di_plus, di_minus = calculate_adx(highs, lows, closes)
 
-                # Prepare response data
                 response = {
                     "status": "historical_data_with_indicators",
                     "symboltoken": symbol_token,
@@ -379,28 +386,20 @@ class MarketConsumer(WebsocketConsumer):
                         "di_plus": round(di_plus, 2) if di_plus is not None else None,
                         "di_minus": round(di_minus, 2) if di_minus is not None else None
                     },
-                    # Optional: include full candles if frontend needs them
-                    # "data": candles
                 }
 
-                # ────────────────────────────────────────────────
-                # Check current position for this symbol
-                # ────────────────────────────────────────────────
-                current_side = self.positions.get(symbol_token, {}).get('side', 'NONE')
-                
-                # ────────────────────────────────────────────────
-                # Generate strategy signals with current position
-                # ────────────────────────────────────────────────
+                # Get current position from DB
+                open_pos = self.get_open_position_for_token(symbol_token)
+                current_side = open_pos.side if open_pos else "NONE"
+
                 adx_signal  = check_adx_strategy(response["adx"], current_side)
                 macd_signal = check_macd_strategy(response["macd"], current_side)
 
                 logger.info(f"Strategy check for {symbol_token}: ADX={adx_signal}, MACD={macd_signal}, CurrentSide={current_side}")
 
-                # Send signals if any
                 for sig in [s for s in [adx_signal, macd_signal] if s]:
                     self.handle_strategy_signal(symbol_token, sig, latest_close=response["latest_close"])
 
-                # Send the main response to frontend
                 self.send(text_data=json.dumps(response))
 
             else:
@@ -417,108 +416,119 @@ class MarketConsumer(WebsocketConsumer):
             }))
             logger.error(f"Historical fetch exception: {str(e)}")
 
+    # ────────────────────────────────────────────────
+    # Database Position Helpers
+    # ────────────────────────────────────────────────
+
+    def get_open_position_for_token(self, symbol_token):
+        """Get the most recent open position for this token"""
+        return Position.objects.filter(
+            token=symbol_token,
+            status="OPEN"
+        ).order_by('-entry_datetime').first()
+
+    def open_position_db(self, symbol_token, side, entry_price, quantity=1, target=None, stoploss=None):
+        try:
+            symbol_name = self.token_symbol_map.get(symbol_token, symbol_token)
+            exchange = "NSE"  # change later if needed
+
+            # Do NOT pass 'side' to the model
+            position = Position.objects.create(
+                symbol=symbol_name,
+                exchange=exchange,
+                token=symbol_token,
+                entry_price=entry_price,
+                target=target,
+                stoploss=stoploss,
+                mtm=0.0,
+                status="OPEN"
+            )
+            logger.info(f"DB Position OPENED: {side.upper()} {symbol_name} ({symbol_token}) @ {entry_price}")
+            return position
+        except Exception as e:
+            logger.error(f"Failed to create position in DB: {e}")
+            return None
+
+
+    def close_position_db(self, symbol_token, exit_price, exit_reason="Strategy Exit"):
+        try:
+            position = self.get_open_position_for_token(symbol_token)
+
+            if not position:
+                logger.warning(f"No open position found in DB for token {symbol_token}")
+                return
+
+            # Very simple / approximate PNL (we don't know direction → we assume LONG)
+            # You can improve this later when you decide how to track direction
+            if position.entry_price is not None:
+                pnl = (exit_price - position.entry_price) * 1   # qty=1, assumes LONG / positive move
+            else:
+                pnl = 0.0
+
+            position.exit_price = exit_price
+            position.exit_datetime = timezone.now()
+            position.mtm = round(pnl, 2)
+            position.status = "CLOSED"
+            position.save()
+
+            logger.info(f"DB Position CLOSED: {position.symbol} @ {exit_price} | Approx PNL: {pnl} | Reason: {exit_reason}")
+            return position
+
+        except Exception as e:
+            logger.error(f"Failed to close position in DB: {e}")
+            return None
+
     def handle_strategy_signal(self, symbol_token, signal, latest_close=None):
-        """
-        Handle strategy signal:
-        - Log signal or no-signal
-        - Send to frontend (strategy_signal or no_signal)
-        - Simulate position update (entry/exit) using latest_close if available
-        """
-        entry_price = latest_close if latest_close is not None else 1062.65
+        if not signal:
+            symbol_name = self.token_symbol_map.get(symbol_token, symbol_token)
+            open_pos = self.get_open_position_for_token(symbol_token)
+            current_side = open_pos.side if open_pos else "NONE"
 
-        current_pos = self.positions.get(symbol_token, {"side": "NONE"})
-
-        # Try to get symbol name from map (fallback to token)
-        symbol_name = self.token_symbol_map.get(symbol_token, symbol_token)
-
-        if signal:
-            action = signal["action"]
-            reason = signal["reason"]
-            
-            # Log the signal
-            logger.info(
-                f"Signal generated for {symbol_name} ({symbol_token}): "
-                f"{action} - {reason} | Current position: {current_pos['side']}"
-            )
-
-            # Send signal to frontend
-            self.send(text_data=json.dumps({
-                "status": "strategy_signal",
-                "symboltoken": symbol_token,
-                "symbol": symbol_name,
-                "signal": signal,
-                "current_position": current_pos
-            }))
-
-            # Simulate position update (safe for testing)
-            if action == "BUY" and current_pos["side"] == "NONE":
-                entry_price = latest_close if latest_close is not None else 1062.65  # fallback
-                self.update_position(symbol_token, "LONG", entry_price, quantity=1)
-                logger.info(f"Simulated BUY entry for {symbol_name} @ {entry_price}")
-
-            elif action == "SELL" and current_pos["side"] == "NONE":
-                entry_price = latest_close if latest_close is not None else 1062.65
-                self.update_position(symbol_token, "SHORT", entry_price, quantity=1)
-                logger.info(f"Simulated SELL entry for {symbol_name} @ {entry_price}")
-
-            elif action == "EXIT" and symbol_token in self.positions:
-                exit_price = latest_close if latest_close is not None else 1062.65
-                self.close_position(symbol_token, exit_price)
-                logger.info(f"Simulated EXIT for {symbol_name} @ {exit_price} | PNL updated")
-
-        else:
-            # Log when no signal (helps debugging)
-            logger.info(
-                f"No signal for {symbol_name} ({symbol_token}) | "
-                f"Current position: {current_pos['side']}"
-            )
-
-            # Optional: inform frontend there is no action right now
             self.send(text_data=json.dumps({
                 "status": "no_signal",
                 "symboltoken": symbol_token,
                 "symbol": symbol_name,
-                "current_position": current_pos
+                "current_position": {"side": current_side}
             }))
-
-    def update_position(self, symbol_token, side, entry_price, quantity=1):
-        """
-        Create or update a position (LONG or SHORT)
-        """
-        self.positions[symbol_token] = {
-            "side": side,               # "LONG" or "SHORT"
-            "entry_price": entry_price,
-            "quantity": quantity,
-            "entry_time": pd.Timestamp.now(tz='Asia/Kolkata').isoformat(),
-            "exchange": "NSE",          # can make dynamic later
-            "target": None,
-            "stoploss": None,
-            "pnl": 0.0
-        }
-        logger.info(f"Position opened: {side} {symbol_token} @ {entry_price} (qty: {quantity})")
-
-    def close_position(self, symbol_token, exit_price):
-        """
-        Close a position and calculate PNL
-        """
-        if symbol_token not in self.positions:
-            logger.warning(f"No position to close for {symbol_token}")
             return
 
-        pos = self.positions[symbol_token]
-        if pos["side"] == "LONG":
-            pnl = (exit_price - pos["entry_price"]) * pos["quantity"]
-        elif pos["side"] == "SHORT":
-            pnl = (pos["entry_price"] - exit_price) * pos["quantity"]
-        else:
-            pnl = 0.0
+        action = signal["action"]
+        # In real system → get from LTP feed or last candle
+        entry_or_exit_price = latest_close if latest_close is not None else 1062.65
 
-        pos["exit_price"] = exit_price
-        pos["exit_time"] = pd.Timestamp.now(tz='Asia/Kolkata').isoformat()
-        pos["pnl"] = round(pnl, 2)
-        pos["mtm"] = round(pnl, 2)  # mark-to-market = realized PNL
+        symbol_name = self.token_symbol_map.get(symbol_token, symbol_token)
+        open_pos = self.get_open_position_for_token(symbol_token)
 
-        logger.info(f"Position closed: {symbol_token} {pos['side']} @ {exit_price} | PNL: {pnl}")
+        if action in ("BUY", "SELL") and not open_pos:
+            side = "LONG" if action == "BUY" else "SHORT"
+            position = self.open_position_db(symbol_token, side, entry_or_exit_price)   # side is only for logging
+
+            # In the send message you can still include side:
+            self.send(text_data=json.dumps({
+                "status": "position_opened",
+                "symbol": symbol_name,
+                "token": symbol_token,
+                "side": side,                  # ← frontend still sees it
+                "entry_price": entry_or_exit_price,
+                "signal": signal
+            }))
+
+        elif action == "EXIT" and open_pos:
+            closed_pos = self.close_position_db(symbol_token, entry_or_exit_price, signal["reason"])
+
+            if closed_pos:
+                self.send(text_data=json.dumps({
+                    "status": "position_closed",
+                    "symbol": symbol_name,
+                    "token": symbol_token,
+                    "exit_price": entry_or_exit_price,
+                    "pnl": closed_pos.mtm,
+                    "signal": signal
+                }))
+
+    # ────────────────────────────────────────────────
+    # Cleanup on disconnect
+    # ────────────────────────────────────────────────
 
     def disconnect(self, close_code):
         try:
