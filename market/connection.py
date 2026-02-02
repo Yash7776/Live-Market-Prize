@@ -72,20 +72,21 @@ def setup_connection(consumer):
         def on_data(wsapp, message):
             token = message.get("token")
             ltp_raw = message.get("last_traded_price")
+            
             if not ltp_raw:
                 return
 
             ltp = ltp_raw / 100
             symbol = consumer.token_symbol_map.get(token, "UNKNOWN")
 
-            # Send LTP as before
+            # 1. Always send current LTP to frontend
             consumer.send(json.dumps({
                 "symbol": symbol,
                 "token": token,
-                "ltp": ltp
+                "ltp": round(ltp, 2)
             }))
 
-            # ── NEW: Update MTM for open positions ──
+            # 2. Try to update MTM and check target/stoploss for open positions
             try:
                 open_position = Position.objects.filter(
                     token=token,
@@ -93,25 +94,73 @@ def setup_connection(consumer):
                 ).first()
 
                 if open_position and open_position.entry_price is not None:
-                    # Simple approximation (no direction stored → assume LONG)
-                    # Later: improve if you add direction logic
-                    mtm = (ltp - open_position.entry_price) * 1  # qty=1
+                    entry = open_position.entry_price
+                    
+                    # Direction-aware MTM approximation (without having 'side' field)
+                    if ltp >= entry:
+                        # Looks like LONG position (profit when price rises)
+                        mtm = (ltp - entry) * 1   # quantity = 1 for now
+                    else:
+                        # Looks like SHORT position (profit when price falls)
+                        mtm = (entry - ltp) * 1
 
-                    if abs(mtm - open_position.mtm) > 0.05:   # update only if meaningful change
+                    # Update MTM only if change is meaningful (avoid database spam)
+                    print(mtm)
+                    if abs(mtm - open_position.mtm) > 0.05:
                         open_position.mtm = round(mtm, 2)
                         open_position.save(update_fields=['mtm'])
 
+                        # Send MTM update to frontend
                         consumer.send(json.dumps({
                             "status": "mtm_update",
                             "token": token,
                             "symbol": symbol,
-                            "ltp": ltp,
+                            "ltp": round(ltp, 2),
                             "mtm": open_position.mtm,
-                            "entry_price": open_position.entry_price
+                            "entry_price": round(entry, 2),
+                            "direction_guess": "LONG" if ltp >= entry else "SHORT"
                         }))
-                        logger.debug(f"MTM updated for {symbol} ({token}): {open_position.mtm:.2f}")
+
+                        logger.debug(f"MTM updated | {symbol} ({token}) | LTP={ltp:.2f} | MTM={open_position.mtm:.2f}")
+
+                    # 3. Check if target or stoploss hit → auto exit
+                    exit_reason = None
+                    should_exit = False
+
+                    # Target hit?
+                    if open_position.target is not None:
+                        if (ltp >= open_position.target and ltp >= entry) or \
+                        (ltp <= open_position.target and ltp <= entry):
+                            exit_reason = "Target reached"
+                            should_exit = True
+
+                    # Stoploss hit?
+                    if open_position.stoploss is not None:
+                        if (ltp <= open_position.stoploss and ltp <= entry) or \
+                        (ltp >= open_position.stoploss and ltp >= entry):
+                            exit_reason = "Stoploss hit"
+                            should_exit = True
+
+                    if should_exit:
+                        consumer.close_position_db(
+                            symbol_token=token,
+                            exit_price=ltp,
+                            exit_reason=exit_reason
+                        )
+                        logger.info(f"AUTO EXIT | {exit_reason} | {symbol} ({token}) | Price={ltp:.2f}")
+
+                        # Notify frontend about auto exit
+                        consumer.send(json.dumps({
+                            "status": "auto_exit",
+                            "token": token,
+                            "symbol": symbol,
+                            "exit_price": round(ltp, 2),
+                            "exit_reason": exit_reason,
+                            "mtm": open_position.mtm
+                        }))
+
             except Exception as e:
-                logger.error(f"MTM update failed for token {token}: {e}")
+                logger.error(f"Error in on_data processing for token {token}: {e}", exc_info=True)
 
         def on_error(wsapp, error):
             logger.error(f"WebSocket Error: {error}")
