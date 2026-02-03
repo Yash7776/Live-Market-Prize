@@ -11,10 +11,10 @@ from django.utils import timezone
 from logzero import logger
 from SmartApi import SmartConnect
 from SmartApi.smartWebSocketV2 import SmartWebSocketV2
-from ..Datafeed.connection import CLIENT_CODE, PIN, TOTP_SECRET, setup_connection
-from ..Strategy.indicators import calculate_rsi, calculate_macd, calculate_adx
-from ..Strategy.strategies import check_adx_strategy, check_macd_strategy
-from ..models import Position
+from Datafeed.connection import CLIENT_CODE, PIN, TOTP_SECRET, setup_connection
+from Strategy.indicators import calculate_rsi, calculate_macd, calculate_adx
+from Strategy.strategies import check_adx_strategy, check_macd_strategy
+from market.models import Position
 from timeloop import Timeloop
 from datetime import timedelta
 
@@ -630,7 +630,7 @@ class MarketConsumer(WebsocketConsumer):
             print(f"[SIGNAL UNKNOWN] Action={action} ignored for {symbol_token}")
     
     def register_timers(self):
-            @self.tl.job(interval=timedelta(seconds=30))  # Run every 30 seconds — change to 60, 300, etc.
+            @self.tl.job(interval=timedelta(seconds=1))  # Run every 30 seconds — change to 60, 300, etc.
             def periodic_market_check():
                 try:
                     now = timezone.now()
