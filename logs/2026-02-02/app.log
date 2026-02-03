@@ -899,3 +899,87 @@
 [I 260202 16:43:50 connection:58] Created token-to-symbol map with 203278 entries
 [I 260202 16:43:50 connection:59] Instrument list fetched - 225975 entries
 [W 260202 16:43:50 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[E 260202 16:44:00 connection:198] WebSocket Error: Connection closed
+[W 260202 16:44:00 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[E 260202 16:44:00 connection:198] WebSocket Error: Connection closed
+[W 260202 16:44:00 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[E 260202 16:44:00 connection:198] WebSocket Error: Connection closed
+[W 260202 16:44:00 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[I 260202 17:27:11 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260202 17:28:30 consumers:335] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3045', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[I 260202 17:28:30 consumers:342] Historical data fetched - 50 candles
+[I 260202 17:28:30 strategies:48] ADX Signal: {'action': 'BUY', 'reason': '+DI 25.24 > 20 (strong uptrend)', 'confidence': 'high'}
+[I 260202 17:28:30 strategies:78] MACD Signal: {'action': 'BUY', 'reason': 'MACD line 2.8855 > 0 (bullish)'}
+[I 260202 17:28:30 consumers:403] Strategy check for 3045: ADX={'action': 'BUY', 'reason': '+DI 25.24 > 20 (strong uptrend)', 'confidence': 'high'}, MACD={'action': 'BUY', 'reason': 'MACD line 2.8855 > 0 (bullish)'}, CurrentSide=NONE
+[I 260202 17:28:30 consumers:470] Opened LONG SBIN-EQ @ 1062.65 | Lots=1 | Qty=50 | Target=1078.59 | SL=1052.02
+[I 260202 17:39:26 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260202 17:43:08 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260202 17:43:54 consumers:335] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3045', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[I 260202 17:43:55 consumers:342] Historical data fetched - 50 candles
+[I 260202 17:43:55 strategies:48] ADX Signal: {'action': 'BUY', 'reason': '+DI 25.24 > 20 (strong uptrend)', 'confidence': 'high'}
+[I 260202 17:43:55 strategies:78] MACD Signal: {'action': 'BUY', 'reason': 'MACD line 2.8855 > 0 (bullish)'}
+[I 260202 17:43:55 consumers:403] Strategy check for 3045: ADX={'action': 'BUY', 'reason': '+DI 25.24 > 20 (strong uptrend)', 'confidence': 'high'}, MACD={'action': 'BUY', 'reason': 'MACD line 2.8855 > 0 (bullish)'}, CurrentSide=NONE
+[I 260202 17:43:55 consumers:470] Opened LONG SBIN-EQ @ 1062.65 | Lots=1 | Qty=50 | Target=1078.59 | SL=1052.02
+[I 260202 17:52:43 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[W 260202 17:53:21 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260202 17:53:22 smartConnect:124] in pool
+[I 260202 17:53:28 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260202 17:53:30 consumers:517] Position CLOSED | Token=3045 | Exit price=1028.70 | Exit time=2026-02-02 12:23:30.099130+00:00 | Qty=50 | MTM=1697.50 | Reason=Stoploss hit
+[I 260202 17:53:30 connection:175] AUTO EXIT | Stoploss hit | SBIN-EQ (3045) | Price=1028.70
+[I 260202 17:53:31 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260202 17:55:41 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260202 17:56:15 consumers:335] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3045', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[I 260202 17:56:15 consumers:342] Historical data fetched - 50 candles
+[I 260202 17:56:15 strategies:48] ADX Signal: {'action': 'BUY', 'reason': '+DI 25.24 > 20 (strong uptrend)', 'confidence': 'high'}
+[I 260202 17:56:15 strategies:78] MACD Signal: {'action': 'BUY', 'reason': 'MACD line 2.8855 > 0 (bullish)'}
+[I 260202 17:56:15 consumers:403] Strategy check for 3045: ADX={'action': 'BUY', 'reason': '+DI 25.24 > 20 (strong uptrend)', 'confidence': 'high'}, MACD={'action': 'BUY', 'reason': 'MACD line 2.8855 > 0 (bullish)'}, CurrentSide=NONE
+[I 260202 17:56:15 consumers:470] Opened LONG SBIN-EQ @ 1062.65 | Lots=1 | Qty=50 | Target=1078.59 | SL=1052.02
+[I 260202 18:01:06 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260202 18:01:18 consumers:517] Position CLOSED | Token=3045 | Exit price=1028.70 | Exit time=2026-02-02 12:31:18.177499+00:00 | Qty=50 | MTM=1697.50 | Reason=Stoploss hit
+[I 260202 18:01:18 connection:175] AUTO EXIT | Stoploss hit | SBIN-EQ (3045) | Price=1028.70
+[W 260202 18:03:13 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260202 18:03:14 smartConnect:124] in pool
+[I 260202 18:03:19 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260202 18:03:23 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260202 18:23:40 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260202 18:24:09 consumers:331] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3045', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[I 260202 18:24:10 consumers:338] Historical data fetched - 50 candles
+[I 260202 18:24:10 strategies:48] ADX Signal: {'action': 'BUY', 'reason': '+DI 25.24 > 20 (strong uptrend)', 'confidence': 'high'}
+[I 260202 18:24:10 strategies:78] MACD Signal: {'action': 'BUY', 'reason': 'MACD line 2.8855 > 0 (bullish)'}
+[I 260202 18:24:10 consumers:399] Strategy check for 3045: ADX={'action': 'BUY', 'reason': '+DI 25.24 > 20 (strong uptrend)', 'confidence': 'high'}, MACD={'action': 'BUY', 'reason': 'MACD line 2.8855 > 0 (bullish)'}, CurrentSide=NONE
+[I 260202 18:24:10 consumers:466] Opened LONG SBIN-EQ @ 1062.65 | Lots=1 | Qty=50 | Target=1078.59 | SL=1052.02
+[I 260202 18:29:43 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260202 18:30:09 consumers:517] Position CLOSED | Token=3045 | Exit price=1028.70 | Exit time=2026-02-02 13:00:09.863942+00:00 | Qty=50 | MTM=1697.50 | Reason=Stoploss hit
+[I 260202 18:30:09 connection:175] AUTO EXIT | Stoploss hit | SBIN-EQ (3045) | Price=1028.70
+[W 260202 18:30:28 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260202 18:30:29 smartConnect:124] in pool
+[I 260202 18:30:35 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260202 18:30:39 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260202 18:31:19 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260202 18:34:51 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260202 18:36:05 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260202 18:36:21 consumers:337] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3045', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[I 260202 18:36:22 consumers:344] Historical data fetched - 50 candles
+[I 260202 18:36:22 strategies:48] ADX Signal: {'action': 'BUY', 'reason': '+DI 25.24 > 20 (strong uptrend)', 'confidence': 'high'}
+[I 260202 18:36:22 strategies:78] MACD Signal: {'action': 'BUY', 'reason': 'MACD line 2.8855 > 0 (bullish)'}
+[I 260202 18:36:22 consumers:405] Strategy check for 3045: ADX={'action': 'BUY', 'reason': '+DI 25.24 > 20 (strong uptrend)', 'confidence': 'high'}, MACD={'action': 'BUY', 'reason': 'MACD line 2.8855 > 0 (bullish)'}, CurrentSide=NONE
+[I 260202 18:36:22 consumers:472] Opened LONG SBIN-EQ @ 1062.65 | Lots=1 | Qty=50 | Target=1078.59 | SL=1052.02
+[I 260202 18:38:12 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260202 18:38:55 consumers:337] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3045', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[I 260202 18:38:55 consumers:344] Historical data fetched - 50 candles
+[I 260202 18:38:55 strategies:48] ADX Signal: {'action': 'BUY', 'reason': '+DI 25.24 > 20 (strong uptrend)', 'confidence': 'high'}
+[I 260202 18:38:55 strategies:78] MACD Signal: {'action': 'BUY', 'reason': 'MACD line 2.8855 > 0 (bullish)'}
+[I 260202 18:38:55 consumers:405] Strategy check for 3045: ADX={'action': 'BUY', 'reason': '+DI 25.24 > 20 (strong uptrend)', 'confidence': 'high'}, MACD={'action': 'BUY', 'reason': 'MACD line 2.8855 > 0 (bullish)'}, CurrentSide=NONE
+[I 260202 18:38:55 consumers:472] Opened LONG SBIN-EQ @ 1062.65 | Lots=1 | Qty=50 | Target=1078.59 | SL=1052.02
+[I 260202 18:42:07 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260202 18:42:57 consumers:519] Position CLOSED | Token=3045 | Exit price=1028.70 | Exit time=2026-02-02 13:12:57.300972+00:00 | Qty=50 | MTM=1697.50 | Reason=Stoploss hit
+[I 260202 18:42:57 connection:175] AUTO EXIT | Stoploss hit | SBIN-EQ (3045) | Price=1028.70
+[I 260202 18:43:50 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[W 260202 18:53:41 smartWebSocketV2:318] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 260202 18:53:52 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[E 260202 18:54:30 connection:198] WebSocket Error: Connection closed
+[W 260202 18:54:30 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[E 260202 18:54:30 connection:198] WebSocket Error: Connection closed
+[W 260202 18:54:30 smartWebSocketV2:342] Connection closed due to max retry attempts reached.
+[E 260202 18:54:30 connection:198] WebSocket Error: Connection closed
+[W 260202 18:54:30 smartWebSocketV2:342] Connection closed due to max retry attempts reached.

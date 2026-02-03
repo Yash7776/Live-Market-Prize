@@ -1,1 +1,16 @@
+Saved required trading data in the Position table for tracking open and closed positions.
+Implemented Target and Stop Loss price saving for proper risk management.
+Added lots and quantity fields to support proper position sizing.
+Added debugging statements to track execution flow and identify issues during development.
+Verified end-to-end workflow from signal generation to position storage.
+Completed testing for Exit Date and Exit Price using a hard-coded test function to validate exit logic.
+Fixed multiple minor and logical bugs found during testing.
+Improved data consistency, reliability, and overall execution flow.
+Implemented Timeloop to run strategy and signal checks at scheduled intervals automatically.
+
+
+
+
+
+
 

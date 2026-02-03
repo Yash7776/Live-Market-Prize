@@ -1,0 +1,21 @@
+[I 260203 09:45:21 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260203 09:45:23 smartConnect:124] in pool
+[I 260203 09:45:59 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260203 09:48:03 consumers:337] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3045', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[I 260203 09:48:04 consumers:344] Historical data fetched - 50 candles
+[I 260203 09:48:04 strategies:48] ADX Signal: {'action': 'BUY', 'reason': '+DI 25.24 > 20 (strong uptrend)', 'confidence': 'high'}
+[I 260203 09:48:04 strategies:78] MACD Signal: {'action': 'BUY', 'reason': 'MACD line 2.8855 > 0 (bullish)'}
+[I 260203 09:48:04 consumers:405] Strategy check for 3045: ADX={'action': 'BUY', 'reason': '+DI 25.24 > 20 (strong uptrend)', 'confidence': 'high'}, MACD={'action': 'BUY', 'reason': 'MACD line 2.8855 > 0 (bullish)'}, CurrentSide=NONE
+[I 260203 09:48:04 consumers:472] Opened LONG SBIN-EQ @ 1062.65 | Lots=1 | Qty=50 | Target=1078.59 | SL=1052.02
+[I 260203 09:48:05 consumers:519] Position CLOSED | Token=3045 | Exit price=1044.40 | Exit time=2026-02-03 04:18:04.965406+00:00 | Qty=50 | MTM=912.50 | Reason=Stoploss hit
+[I 260203 09:48:05 connection:175] AUTO EXIT | Stoploss hit | SBIN-EQ (3045) | Price=1044.40
+[I 260203 09:50:49 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260203 09:51:26 consumers:331] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3045', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[I 260203 09:51:26 consumers:338] Historical data fetched - 50 candles
+[I 260203 09:51:26 strategies:48] ADX Signal: {'action': 'BUY', 'reason': '+DI 25.24 > 20 (strong uptrend)', 'confidence': 'high'}
+[I 260203 09:51:26 strategies:78] MACD Signal: {'action': 'BUY', 'reason': 'MACD line 2.8855 > 0 (bullish)'}
+[I 260203 09:51:26 consumers:399] Strategy check for 3045: ADX={'action': 'BUY', 'reason': '+DI 25.24 > 20 (strong uptrend)', 'confidence': 'high'}, MACD={'action': 'BUY', 'reason': 'MACD line 2.8855 > 0 (bullish)'}, CurrentSide=NONE
+[I 260203 09:51:26 consumers:466] Opened LONG SBIN-EQ @ 1062.65 | Lots=1 | Qty=50 | Target=1078.59 | SL=1052.02
+[I 260203 09:51:27 consumers:513] Position CLOSED | Token=3045 | Exit price=1047.30 | Exit time=2026-02-03 04:21:27.023978+00:00 | Qty=50 | MTM=767.50 | Reason=Stoploss hit
+[I 260203 09:51:27 connection:175] AUTO EXIT | Stoploss hit | SBIN-EQ (3045) | Price=1047.30
+[I 260203 09:53:14 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
