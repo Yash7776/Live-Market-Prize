@@ -11,10 +11,10 @@ from django.utils import timezone
 from logzero import logger
 from SmartApi import SmartConnect
 from SmartApi.smartWebSocketV2 import SmartWebSocketV2
-from .connection import CLIENT_CODE, PIN, TOTP_SECRET, setup_connection
-from .Strategy.indicators import calculate_rsi, calculate_macd, calculate_adx
-from .Strategy.strategies import check_adx_strategy, check_macd_strategy
-from .models import Position
+from ..Datafeed.connection import CLIENT_CODE, PIN, TOTP_SECRET, setup_connection
+from ..Strategy.indicators import calculate_rsi, calculate_macd, calculate_adx
+from ..Strategy.strategies import check_adx_strategy, check_macd_strategy
+from ..models import Position
 from timeloop import Timeloop
 from datetime import timedelta
 

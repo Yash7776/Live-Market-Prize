@@ -89,3 +89,77 @@
 [I 260203 10:18:07 consumers:472] Opened LONG SBIN-EQ @ 1062.65 | Lots=1 | Qty=50 | Target=1078.59 | SL=1052.02
 [I 260203 10:18:37 consumers:519] Position CLOSED | Token=3045 | Exit price=1050.40 | Exit time=2026-02-03 04:48:37.201018+00:00 | Qty=50 | MTM=612.50 | Reason=Stoploss hit
 [I 260203 10:18:37 connection:175] AUTO EXIT | Stoploss hit | SBIN-EQ (3045) | Price=1050.40
+[I 260203 10:28:54 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260203 10:29:29 consumers:337] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3045', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[E 260203 10:29:30 consumers:424] Historical fetch exception: Couldn't parse the JSON response received from the server: b'Access denied because of exceeding access rate'
+    Traceback (most recent call last):
+      File "D:\Yash\smart_trading\myvenv\Lib\site-packages\SmartApi\smartConnect.py", line 230, in _request
+        data = json.loads(r.content.decode("utf8"))
+      File "C:\Users\Admin\AppData\Local\Programs\Python\Python314\Lib\json\__init__.py", line 346, in loads
+        return _default_decoder.decode(s)
+               ~~~~~~~~~~~~~~~~~~~~~~~^^^
+      File "C:\Users\Admin\AppData\Local\Programs\Python\Python314\Lib\json\decoder.py", line 345, in decode
+        obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+                   ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+      File "C:\Users\Admin\AppData\Local\Programs\Python\Python314\Lib\json\decoder.py", line 363, in raw_decode
+        raise JSONDecodeError("Expecting value", s, err.value) from None
+    json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+    
+    During handling of the above exception, another exception occurred:
+    
+    Traceback (most recent call last):
+      File "D:\Yash\smart_trading\myvenv\Lib\site-packages\asgiref\sync.py", line 361, in main_wrap
+        raise exc_info[1]
+      File "D:\Yash\smart_trading\market\WebsocketUtility\consumers.py", line 339, in handle_get_historical
+        candle_data = self.smart_api.getCandleData(historic_params)
+      File "D:\Yash\smart_trading\myvenv\Lib\site-packages\SmartApi\smartConnect.py", line 465, in getCandleData
+        getCandleDataResponse=self._postRequest("api.candle.data",historicDataParams)
+      File "D:\Yash\smart_trading\myvenv\Lib\site-packages\SmartApi\smartConnect.py", line 263, in _postRequest
+        return self._request(route, "POST", params)
+               ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+      File "D:\Yash\smart_trading\myvenv\Lib\site-packages\SmartApi\smartConnect.py", line 233, in _request
+        raise ex.DataException("Couldn't parse the JSON response received from the server: {content}".format(
+            content=r.content))
+    SmartApi.smartExceptions.DataException: Couldn't parse the JSON response received from the server: b'Access denied because of exceeding access rate'
+[I 260203 10:29:56 consumers:337] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3045', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[E 260203 10:29:56 smartConnect:246] Error occurred while making a POST request to https://apiconnect.angelone.in/rest/secure/angelbroking/historical/v1/getCandleData. Error: Something Went Wrong, Please Try After Sometime. URL: https://apiconnect.angelone.in/rest/secure/angelbroking/historical/v1/getCandleData, Headers: {'Content-type': 'application/json', 'X-ClientLocalIP': '127.0.0.1', 'X-ClientPublicIP': '106.193.147.98', 'X-MACAddress': '30:de:4b:37:38:d7', 'Accept': 'application/json', 'X-PrivateKey': 'iARx2hbi', 'X-UserType': 'USER', 'X-SourceID': 'WEB'}, Request: {'exchange': 'NSE', 'symboltoken': '3045', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}, Response: {'message': 'Something Went Wrong, Please Try After Sometime', 'errorcode': 'AB1004', 'status': False, 'data': None}
+[E 260203 10:29:56 consumers:424] Historical fetch exception: object of type 'NoneType' has no len()
+    Traceback (most recent call last):
+      File "D:\Yash\smart_trading\myvenv\Lib\site-packages\asgiref\sync.py", line 361, in main_wrap
+        raise exc_info[1]
+      File "D:\Yash\smart_trading\market\WebsocketUtility\consumers.py", line 344, in handle_get_historical
+        logger.info(f"Historical data fetched - {len(candle_data.get('data', []))} candles")
+                                                 ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    TypeError: object of type 'NoneType' has no len()
+[I 260203 10:30:33 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260203 10:30:34 smartConnect:124] in pool
+[I 260203 10:30:42 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260203 10:30:45 connection:58] Created token-to-symbol map with 205593 entries
+[I 260203 10:30:45 connection:59] Instrument list fetched - 228724 entries
+[I 260203 10:30:45 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260203 10:31:15 consumers:337] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3045', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[I 260203 10:31:15 consumers:344] Historical data fetched - 50 candles
+[I 260203 10:31:15 strategies:48] ADX Signal: {'action': 'BUY', 'reason': '+DI 25.24 > 20 (strong uptrend)', 'confidence': 'high'}
+[I 260203 10:31:15 strategies:78] MACD Signal: {'action': 'BUY', 'reason': 'MACD line 2.8855 > 0 (bullish)'}
+[I 260203 10:31:15 consumers:405] Strategy check for 3045: ADX={'action': 'BUY', 'reason': '+DI 25.24 > 20 (strong uptrend)', 'confidence': 'high'}, MACD={'action': 'BUY', 'reason': 'MACD line 2.8855 > 0 (bullish)'}, CurrentSide=NONE
+[I 260203 10:31:16 consumers:472] Opened LONG SBIN-EQ @ 1062.65 | Lots=1 | Qty=50 | Target=1078.59 | SL=1052.02
+[I 260203 10:31:16 consumers:519] Position CLOSED | Token=3045 | Exit price=1054.50 | Exit time=2026-02-03 05:01:16.129147+00:00 | Qty=50 | MTM=407.50 | Reason=Target reached
+[I 260203 10:31:16 connection:175] AUTO EXIT | Target reached | SBIN-EQ (3045) | Price=1054.50
+[I 260203 10:33:15 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260203 10:33:53 consumers:337] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3045', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[E 260203 10:33:54 smartConnect:246] Error occurred while making a POST request to https://apiconnect.angelone.in/rest/secure/angelbroking/historical/v1/getCandleData. Error: Something Went Wrong, Please Try After Sometime. URL: https://apiconnect.angelone.in/rest/secure/angelbroking/historical/v1/getCandleData, Headers: {'Content-type': 'application/json', 'X-ClientLocalIP': '127.0.0.1', 'X-ClientPublicIP': '106.193.147.98', 'X-MACAddress': '30:de:4b:37:38:d7', 'Accept': 'application/json', 'X-PrivateKey': 'iARx2hbi', 'X-UserType': 'USER', 'X-SourceID': 'WEB'}, Request: {'exchange': 'NSE', 'symboltoken': '3045', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}, Response: {'message': 'Something Went Wrong, Please Try After Sometime', 'errorcode': 'AB1004', 'status': False, 'data': None}
+[E 260203 10:33:54 consumers:424] Historical fetch exception: object of type 'NoneType' has no len()
+    Traceback (most recent call last):
+      File "D:\Yash\smart_trading\myvenv\Lib\site-packages\asgiref\sync.py", line 361, in main_wrap
+        raise exc_info[1]
+      File "D:\Yash\smart_trading\market\WebsocketUtility\consumers.py", line 344, in handle_get_historical
+        logger.info(f"Historical data fetched - {len(candle_data.get('data', []))} candles")
+                                                 ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    TypeError: object of type 'NoneType' has no len()
+[I 260203 10:34:43 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260203 10:35:16 consumers:337] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3045', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[I 260203 10:35:16 consumers:344] Historical data fetched - 50 candles
+[I 260203 10:35:16 strategies:48] ADX Signal: {'action': 'BUY', 'reason': '+DI 25.24 > 20 (strong uptrend)', 'confidence': 'high'}
+[I 260203 10:35:16 strategies:78] MACD Signal: {'action': 'BUY', 'reason': 'MACD line 2.8855 > 0 (bullish)'}
+[I 260203 10:35:16 consumers:405] Strategy check for 3045: ADX={'action': 'BUY', 'reason': '+DI 25.24 > 20 (strong uptrend)', 'confidence': 'high'}, MACD={'action': 'BUY', 'reason': 'MACD line 2.8855 > 0 (bullish)'}, CurrentSide=NONE
+[I 260203 10:35:16 consumers:472] Opened LONG SBIN-EQ @ 1062.65 | Lots=1 | Qty=50 | Target=1078.59 | SL=1052.02
