@@ -1,4 +1,4 @@
-# market/utils/strategies.py
+# market/Strategy/strategies.py
 from logzero import logger
 
 def check_adx_strategy(adx_info, current_side='NONE'):

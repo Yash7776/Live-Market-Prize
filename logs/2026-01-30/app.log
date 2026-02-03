@@ -50,19 +50,19 @@
 [I 260130 11:53:22 consumers:387] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3045', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-20 09:00', 'todate': '2026-01-28 15:30'}
 [I 260130 11:53:23 consumers:394] Historical data fetched - 150 candles
 [I 260130 11:53:23 consumers:470] Signal generated: BUY - +DI 25.24 > 20 (strong uptrend)
-[I 260130 11:53:23 utils:34] Position opened: LONG 1 @ 1062.65
+[I 260130 11:53:23 Strategy:34] Position opened: LONG 1 @ 1062.65
 [I 260130 11:53:23 consumers:475] Simulated BUY entry for 3045
 [I 260130 11:54:17 consumers:57] SmartAPI WebSocket Opened - Ready for subscriptions
 [I 260130 11:54:24 consumers:387] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3045', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-20 09:00', 'todate': '2026-01-28 15:30'}
 [I 260130 11:54:25 consumers:394] Historical data fetched - 150 candles
 [I 260130 11:54:25 consumers:470] Signal generated: BUY - +DI 25.24 > 20 (strong uptrend)
-[I 260130 11:54:25 utils:34] Position opened: LONG 1 @ 1062.65
+[I 260130 11:54:25 Strategy:34] Position opened: LONG 1 @ 1062.65
 [I 260130 11:54:25 consumers:475] Simulated BUY entry for 3045
 [I 260130 12:02:31 consumers:57] SmartAPI WebSocket Opened - Ready for subscriptions
 [I 260130 12:02:36 consumers:387] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '99926000', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-20 09:00', 'todate': '2026-01-28 15:30'}
 [I 260130 12:02:36 consumers:394] Historical data fetched - 150 candles
 [I 260130 12:02:36 consumers:470] Signal generated: BUY - +DI 25.34 > 20 (strong uptrend)
-[I 260130 12:02:36 utils:34] Position opened: LONG 1 @ 1062.65
+[I 260130 12:02:36 Strategy:34] Position opened: LONG 1 @ 1062.65
 [I 260130 12:02:36 consumers:475] Simulated BUY entry for 99926000
 [I 260130 12:07:42 consumers:57] SmartAPI WebSocket Opened - Ready for subscriptions
 [I 260130 12:12:14 consumers:113] SmartAPI WebSocket Opened - Ready for subscriptions
