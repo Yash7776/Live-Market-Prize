@@ -218,3 +218,21 @@
 [I 260203 11:11:14 strategies:78] MACD Signal: {'action': 'BUY', 'reason': 'MACD line 30.6986 > 0 (bullish)'}
 [I 260203 11:11:14 consumers:405] Strategy check for 99926000: ADX={'action': 'BUY', 'reason': '+DI 25.34 > 20 (strong uptrend)', 'confidence': 'high'}, MACD={'action': 'BUY', 'reason': 'MACD line 30.6986 > 0 (bullish)'}, CurrentSide=NONE
 [I 260203 11:11:14 consumers:472] Opened LONG Nifty 50 @ 25348.05 | Lots=1 | Qty=50 | Target=25728.27 | SL=25094.57
+[I 260203 11:55:34 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260203 11:58:52 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260203 11:59:32 consumers:333] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '99926000', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[I 260203 11:59:32 consumers:340] Historical data fetched - 50 candles
+[I 260203 11:59:32 strategies:48] ADX Signal: {'action': 'BUY', 'reason': '+DI 25.34 > 20 (strong uptrend)', 'confidence': 'high'}
+[I 260203 11:59:32 strategies:78] MACD Signal: {'action': 'BUY', 'reason': 'MACD line 30.6986 > 0 (bullish)'}
+[I 260203 11:59:32 consumers:401] Strategy check for 99926000: ADX={'action': 'BUY', 'reason': '+DI 25.34 > 20 (strong uptrend)', 'confidence': 'high'}, MACD={'action': 'BUY', 'reason': 'MACD line 30.6986 > 0 (bullish)'}, CurrentSide=NONE
+[I 260203 11:59:32 consumers:468] Opened LONG Nifty 50 @ 25348.05 | Lots=1 | Qty=50 | Target=25728.27 | SL=25094.57
+[I 260203 12:01:21 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260203 12:02:11 connection:76] SmartAPI WebSocket Opened - Ready for subscriptions
+[I 260203 12:02:39 consumers:333] Fetching historical candles with params: {'exchange': 'NSE', 'symboltoken': '3045', 'interval': 'FIFTEEN_MINUTE', 'fromdate': '2026-01-25 09:00', 'todate': '2026-01-28 15:30'}
+[I 260203 12:02:39 consumers:340] Historical data fetched - 50 candles
+[I 260203 12:02:39 strategies:48] ADX Signal: {'action': 'BUY', 'reason': '+DI 25.24 > 20 (strong uptrend)', 'confidence': 'high'}
+[I 260203 12:02:39 strategies:78] MACD Signal: {'action': 'BUY', 'reason': 'MACD line 2.8855 > 0 (bullish)'}
+[I 260203 12:02:39 consumers:401] Strategy check for 3045: ADX={'action': 'BUY', 'reason': '+DI 25.24 > 20 (strong uptrend)', 'confidence': 'high'}, MACD={'action': 'BUY', 'reason': 'MACD line 2.8855 > 0 (bullish)'}, CurrentSide=NONE
+[I 260203 12:02:39 consumers:468] Opened LONG SBIN-EQ @ 1062.65 | Lots=1 | Qty=50 | Target=1078.59 | SL=1052.02
+[I 260203 12:02:40 consumers:515] Position CLOSED | Token=3045 | Exit price=1057.20 | Exit time=2026-02-03 06:32:40.001443+00:00 | Qty=50 | MTM=272.50 | Reason=Target reached
+[I 260203 12:02:40 connection:175] AUTO EXIT | Target reached | SBIN-EQ (3045) | Price=1057.20

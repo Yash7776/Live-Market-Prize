@@ -11,12 +11,10 @@ from django.utils import timezone
 from logzero import logger
 from SmartApi import SmartConnect
 from SmartApi.smartWebSocketV2 import SmartWebSocketV2
-from Datafeed.connection import CLIENT_CODE, PIN, TOTP_SECRET, setup_connection
-from Strategy.indicators import calculate_rsi, calculate_macd, calculate_adx
-from Strategy.strategies import check_adx_strategy, check_macd_strategy
-from market.models import Position
-from timeloop import Timeloop
-from datetime import timedelta
+from .connection import CLIENT_CODE, PIN, TOTP_SECRET, setup_connection
+from .utils.indicators import calculate_rsi, calculate_macd, calculate_adx
+from .utils.strategies import check_adx_strategy, check_macd_strategy
+from .models import Position
 
 # Official exchangeType mapping from SmartAPI SDK source
 EXCHANGE_MAP = {
@@ -35,10 +33,6 @@ class MarketConsumer(WebsocketConsumer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
-        self.tl = Timeloop()
-        self.register_timers()
-        self.tl.start(block=False)
 
     def connect(self):
         self.accept()
@@ -628,39 +622,6 @@ class MarketConsumer(WebsocketConsumer):
 
         else:
             print(f"[SIGNAL UNKNOWN] Action={action} ignored for {symbol_token}")
-    
-    def register_timers(self):
-            @self.tl.job(interval=timedelta(seconds=1))  # Run every 30 seconds — change to 60, 300, etc.
-            def periodic_market_check():
-                try:
-                    now = timezone.now()
-                    print(f"[TIMER {now.strftime('%H:%M:%S')}] Periodic check running...")
-
-                    open_positions = Position.objects.filter(status="OPEN")
-
-                    if open_positions.exists():
-                        for pos in open_positions:
-                            print(
-                                f"Open: {pos.symbol} | "
-                                f"Entry={pos.entry_price} | "
-                                f"MTM={pos.mtm}"
-                            )
-                    else:
-                        print("No open positions")
-                        
-                    if now.hour > 15 or (now.hour == 15 and now.minute >= 25):
-                        for pos in open_positions:
-                            exit_price = pos.entry_price  # replace with LTP
-                            self.close_position_db(
-                                symbol_token=pos.token,
-                                exit_price=exit_price,
-                                exit_reason="Market close auto square-off"
-                            )
-                            print(f"[AUTO SQUARE-OFF] {pos.symbol} closed")
-
-                except Exception as e:
-                    print(f"[TIMER ERROR] {e}")
-                
     
     def disconnect(self, close_code):
         try:
